@@ -23,7 +23,8 @@ import {
   Sliders, 
   Send, 
   MessageCircle,
-  UserPlus
+  UserPlus,
+  Lock
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import type { EventPhoto, UserProfile } from '../types';
@@ -301,6 +302,16 @@ export const PhotoModalViewer: React.FC<PhotoModalViewerProps> = ({
               filter: selectedFilm.cssFilter,
             }}
           />
+
+          {/* 🛡️ Marca d'Água de Proteção Anti-Print & Anti-Captura Mobile */}
+          {!isPurchased && (
+            <div className="mobile-anti-print-watermark-overlay" aria-hidden="true">
+              <div className="anti-print-watermark-center">
+                <Lock size={18} />
+                <span>meflagrou.com • FOTO OFICIAL 8K</span>
+              </div>
+            </div>
+          )}
 
           {/* Previous / Next Arrow Controls */}
           {hasPrev && (

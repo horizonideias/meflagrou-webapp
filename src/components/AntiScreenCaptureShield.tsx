@@ -81,7 +81,42 @@ export const AntiScreenCaptureShield: React.FC<AntiScreenCaptureShieldProps> = (
       }
     };
 
-    // 2. Window Blur / Tab change protection (Snipping tool focus steal or background window capture)
+    // 2. 📱 MOBILE PROTECTION: Multi-touch (3-finger screenshot gesture) & Long-press (Save image attempt)
+    let longPressTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      // 3 or more fingers swipe (Common Android/iOS screenshot gesture)
+      if (e.touches && e.touches.length >= 3) {
+        e.preventDefault();
+        if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
+        triggerShield('📱 Gesto de Captura de Tela 3 Dedos Bloqueado: Fotos protegidas por criptografia meflagrou.');
+        return;
+      }
+
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'IMG' || target.closest('.instagram-post-card') || target.closest('.fullscreen-image-stage') || target.closest('.fullscreen-thumbnails-masonry'))) {
+        longPressTimer = setTimeout(() => {
+          if (navigator.vibrate) navigator.vibrate(100);
+          triggerShield('🛡️ Toque longo bloqueado: O download direto no celular foi desativado. Adquira a foto oficial em 8K.');
+        }, 450);
+      }
+    };
+
+    const handleTouchEnd = () => {
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+    };
+
+    const handleTouchMove = () => {
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+    };
+
+    // 3. Window Blur / Tab change protection (Snipping tool focus steal, iOS/Android App Switcher & Screenshot overlay)
     const handleWindowBlur = () => {
       setIsWindowBlurred(true);
     };
@@ -98,16 +133,21 @@ export const AntiScreenCaptureShield: React.FC<AntiScreenCaptureShieldProps> = (
       }
     };
 
-    // 3. Right Click context menu protection on images
+    const handlePageHide = () => {
+      setIsWindowBlurred(true);
+    };
+
+    // 4. Right Click context menu protection on images & touch callouts
     const handleContextMenu = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
-      if (target && (target.tagName === 'IMG' || target.closest('.instagram-post-card') || target.closest('.fullscreen-modal-root') || target.closest('.photo-viewer-stage'))) {
+      if (target && (target.tagName === 'IMG' || target.closest('.instagram-post-card') || target.closest('.fullscreen-modal-root') || target.closest('.photo-viewer-stage') || target.closest('.fullscreen-image-stage'))) {
         e.preventDefault();
-        triggerShield('🛡️ Clique com botão direito bloqueado para proteção do acervo fotográfico.');
+        if (navigator.vibrate) navigator.vibrate(60);
+        triggerShield('🛡️ Menu de contexto e salvamento bloqueados para proteção do acervo.');
       }
     };
 
-    // 4. Drag & Drop image protection
+    // 5. Drag & Drop image protection
     const handleDragStart = (e: DragEvent) => {
       const target = e.target as HTMLElement | null;
       if (target && target.tagName === 'IMG') {
@@ -119,18 +159,27 @@ export const AntiScreenCaptureShield: React.FC<AntiScreenCaptureShieldProps> = (
     window.addEventListener('keyup', handleKeyUp, true);
     window.addEventListener('blur', handleWindowBlur);
     window.addEventListener('focus', handleWindowFocus);
+    window.addEventListener('pagehide', handlePageHide);
     document.addEventListener('visibilitychange', handleVisibilityChange);
     document.addEventListener('contextmenu', handleContextMenu, true);
     document.addEventListener('dragstart', handleDragStart, true);
+    document.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive: true });
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown, true);
       window.removeEventListener('keyup', handleKeyUp, true);
       window.removeEventListener('blur', handleWindowBlur);
       window.removeEventListener('focus', handleWindowFocus);
+      window.removeEventListener('pagehide', handlePageHide);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       document.removeEventListener('contextmenu', handleContextMenu, true);
       document.removeEventListener('dragstart', handleDragStart, true);
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener('touchmove', handleTouchMove);
+      if (longPressTimer) clearTimeout(longPressTimer);
     };
   }, [triggerShield]);
 

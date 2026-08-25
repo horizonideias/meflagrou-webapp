@@ -12071,3 +12071,99 @@ img {
   box-shadow: none;
 }
 
+/* ========================================================================= */
+/* 📱 MOBILE ANTI-SCREENSHOT & ANTI-PRINT COPYRIGHT PROTECTION SHIELD */
+/* ========================================================================= */
+
+/* 1. Disable image selection, dragging, and iOS long-press callouts */
+img, 
+video, 
+canvas, 
+.instagram-post-card, 
+.fullscreen-image-stage, 
+.fullscreen-thumb-tile, 
+.profile-photo-grid-item {
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  -khtml-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  -webkit-user-drag: none !important;
+  user-drag: none !important;
+}
+
+/* 2. Privacy curtain when window/tab is blurred or background capture is active */
+.screen-protection-privacy-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: rgba(7, 8, 12, 0.96);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.15s ease;
+}
+
+.privacy-curtain-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #00f5d4;
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 20px rgba(0, 245, 212, 0.6);
+}
+
+/* 3. Anti-Print Protection (Hides everything on print / export) */
+@media print {
+  html, body, #root {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
+}
+
+/* 4. Mobile Anti-Print / Watermark Grid Protection Layer */
+.mobile-anti-print-watermark-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.015),
+    rgba(255, 255, 255, 0.015) 120px,
+    rgba(0, 245, 212, 0.03) 120px,
+    rgba(0, 245, 212, 0.03) 240px
+  );
+}
+
+.anti-print-watermark-center {
+  background: rgba(7, 8, 12, 0.65);
+  border: 1px solid rgba(0, 245, 212, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 8px 18px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 245, 212, 0.2);
+  user-select: none;
+  -webkit-user-select: none;
+  opacity: 0.82;
+}
+
