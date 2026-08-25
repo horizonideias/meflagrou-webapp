@@ -506,9 +506,10 @@ export const InstagramApp: React.FC = () => {
           isOpen={isPhotographerUploadOpen}
           onClose={() => setIsPhotographerUploadOpen(false)}
           onPhotosPublished={(photos) => {
-            setUploadSuccessToast(`📸 ${photos.length} flagras publicados com sucesso no meflagrou!`);
+            setIsPhotographerUploadOpen(false);
+            handleSelectUser(currentUser);
+            setUploadSuccessToast(`📸 ${photos.length} flagras publicados com sucesso no seu perfil!`);
             setTimeout(() => setUploadSuccessToast(null), 4000);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
         />
       )}

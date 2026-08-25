@@ -244,21 +244,12 @@ export const PhotoUploadDashboard: React.FC<PhotoUploadDashboardProps> = ({
           });
 
           confetti({
-            particleCount: 80,
+            particleCount: 110,
             spread: 90,
             origin: { y: 0.55 },
             colors: ['#00f5d4', '#ff007a', '#ffb703', '#9333ea'],
           });
-
-          const totalFaces = photoQueue.reduce((acc, curr) => acc + curr.detectedFaces, 0);
-          const totalVal = photoQueue.reduce((acc, curr) => acc + curr.price, 0);
-
-          setPublishedBatchSummary({
-            totalPhotos: photoQueue.length,
-            totalFaces,
-            totalValue: totalVal,
-            photos: newPublishedPhotos,
-          });
+          soundFx.playUnlockSuccess();
 
           if (onPhotosPublished) {
             onPhotosPublished(newPublishedPhotos);
@@ -266,6 +257,11 @@ export const PhotoUploadDashboard: React.FC<PhotoUploadDashboardProps> = ({
 
           setIsPublishingAll(false);
           setPhotoQueue([]);
+
+          // Redireciona imediatamente fechando o modal para abrir a galeria
+          setTimeout(() => {
+            onClose();
+          }, 700);
         }, 800);
       }, 700);
     }, 700);
