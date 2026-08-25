@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # Database Service (MariaDB 10.11)
+  db:
+    image: mariadb:10.11
+    container_name: meflagrou_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: meflagrou_wp
+      MYSQL_USER: meflagrou_user
+      MYSQL_PASSWORD: meflagrou_secure_pass_2026
+      MYSQL_ROOT_PASSWORD: meflagrou_root_pass_2026
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - meflagrou_net
+
+  # WordPress + PHP 8.2 Service
+  wordpress:
+    image: wordpress:6.7-php8.2-apache
+    container_name: meflagrou_app
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: meflagrou_wp
+      WORDPRESS_DB_USER: meflagrou_user
+      WORDPRESS_DB_PASSWORD: meflagrou_secure_pass_2026
+      WORDPRESS_TABLE_PREFIX: mf_
+    volumes:
+      - wp_data:/var/www/html
+      - ./themes/meflagrou:/var/www/html/wp-content/themes/meflagrou
+      - ./plugins/meflagrou-core:/var/www/html/wp-content/plugins/meflagrou-core
+    networks:
+      - meflagrou_net
+
+volumes:
+  db_data:
+  wp_data:
+
+networks:
+  meflagrou_net:
+    driver: bridge

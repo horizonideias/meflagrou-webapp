@@ -1,0 +1,115 @@
+/*
+Theme Name: meflagrou.com
+Theme URI: https://meflagrou.com
+Author: DEUS Development Team
+Author URI: https://meflagrou.com
+Description: Tema Oficial meflagrou.com - Plataforma Cyberpunk/Neon Dark de Fotografia de Eventos, Festivais e Vida Noturna com Autenticação por CPF e WhatsApp, Reconhecimento Facial Face ID e Proteção Anti-Print.
+Version: 2.0.0
+Requires at least: 6.0
+Tested up to: 6.7
+Requires PHP: 7.4
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: meflagrou
+Tags: dark-mode, cyberpunk, neon, photography, events, e-commerce, portfolio, custom-post-types
+*/
+
+/* =========================================================================
+   MEFLAGROU.COM - DESIGN SYSTEM & CYBERPUNK VARIABLES
+   ========================================================================= */
+:root {
+  --bg-primary: #07080c;
+  --bg-surface: #0f111a;
+  --bg-card: #151824;
+  --bg-card-hover: #1c2130;
+  
+  --accent-teal: #00f5d4;
+  --accent-cyan: #00e5ff;
+  --accent-pink: #ff007a;
+  --accent-gold: #ffb703;
+  --accent-whatsapp: #25d366;
+  --accent-purple: #7928ca;
+
+  --text-primary: #ffffff;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-glow: rgba(0, 245, 212, 0.35);
+  
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Base Neon Container */
+.mf-container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Neon Glow Utility Classes */
+.mf-glow-teal {
+  text-shadow: 0 0 12px rgba(0, 245, 212, 0.6);
+}
+
+.mf-glow-pink {
+  text-shadow: 0 0 12px rgba(255, 0, 122, 0.6);
+}
+
+.mf-border-glow-teal {
+  border-color: var(--accent-teal);
+  box-shadow: 0 0 20px rgba(0, 245, 212, 0.3);
+}
+
+/* @media print security rule */
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  body::before {
+    content: "🔒 MEFLAGROU.COM • CONTEÚDO PROTEGIDO POR DIREITOS AUTORAIS. Impressão bloqueada.";
+    visibility: visible !important;
+    position: fixed;
+    top: 40%;
+    left: 10%;
+    right: 10%;
+    text-align: center;
+    font-size: 20pt;
+    font-weight: bold;
+    color: #000;
+  }
+}

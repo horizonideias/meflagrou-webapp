@@ -1,0 +1,25 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "landingPage": "/",
+  "preferredVersions": {
+    "php": "8.2",
+    "wp": "6.7"
+  },
+  "steps": [
+    {
+      "step": "setSiteOptions",
+      "options": {
+        "blogname": "meflagrou.com",
+        "blogdescription": "Plataforma de Flagrantes de Festivais & Baladas"
+      }
+    },
+    {
+      "step": "activateTheme",
+      "themeFolderName": "meflagrou"
+    },
+    {
+      "step": "activatePlugin",
+      "pluginPath": "meflagrou-core/meflagrou-core.php"
+    }
+  ]
+}

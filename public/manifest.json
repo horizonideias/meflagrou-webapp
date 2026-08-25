@@ -1,0 +1,18 @@
+{
+  "name": "meflagrou.com - Reconhecimento Facial & Flagras VIP",
+  "short_name": "meflagrou",
+  "description": "Portal inteligente de fotos de festas e festivais com reconhecimento facial e compra instantânea.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07080c",
+  "theme_color": "#00f5d4",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
