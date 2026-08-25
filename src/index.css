@@ -1866,13 +1866,12 @@ h1, h2, h3, h4, h5, h6, p, span, a, button, label {
   color: #ffffff;
 }
 
-/* Post Media Image (1080x1350 com Enquadramento Perfeito para Caber Perfil + Interações + Comentários) */
+/* Post Media Image (1080x1350 Enquadramento Perfeito Sem Cortar Rostos) */
 .post-media-container {
   position: relative;
-  width: calc(100% - 16px);
+  width: 100%;
   margin: 0 auto 6px auto;
-  aspect-ratio: 1080 / 1350;
-  max-height: min(420px, 46vh);
+  aspect-ratio: 4 / 5;
   background: #020305;
   cursor: pointer;
   user-select: none;
@@ -1890,7 +1889,7 @@ h1, h2, h3, h4, h5, h6, p, span, a, button, label {
     transform: scale(1) translate(0%, 0%);
   }
   50% {
-    transform: scale(1.045) translate(-1%, -0.8%);
+    transform: scale(1.02) translate(-0.5%, -0.4%);
   }
   100% {
     transform: scale(1) translate(0%, 0%);
@@ -1901,6 +1900,7 @@ h1, h2, h3, h4, h5, h6, p, span, a, button, label {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center 20%;
   border-radius: 18px;
   display: block;
   animation: liveFeedPhotoDrift 8s ease-in-out infinite alternate;
@@ -3706,13 +3706,14 @@ h1, h2, h3, h4, h5, h6, p, span, a, button, label {
   overflow: hidden;
 }
 
-/* 🖼️ Main Fullscreen Image (Padronizado em Formato Story 9:16 / 1080x1920) */
+/* 🖼️ Main Fullscreen Image (Enquadramento Perfeito 100% Sem Cortes) */
 .fullscreen-main-img {
-  max-height: 92vh;
-  aspect-ratio: 9 / 16;
+  max-height: 94vh;
+  max-width: 96vw;
   width: auto;
-  object-fit: cover;
-  border-radius: 24px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 20px;
   box-shadow: 0 25px 70px rgba(0, 0, 0, 0.95), 0 0 35px rgba(0, 245, 212, 0.2);
   display: block;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
@@ -3721,10 +3722,11 @@ h1, h2, h3, h4, h5, h6, p, span, a, button, label {
 @media (max-width: 768px) {
   .fullscreen-main-img {
     width: auto;
-    max-width: calc(100vw - 16px);
-    max-height: 94vh;
-    border-radius: 18px;
-    object-fit: cover;
+    height: auto;
+    max-width: 100vw;
+    max-height: 92vh;
+    border-radius: 14px;
+    object-fit: contain;
   }
 }
 
@@ -12165,5 +12167,34 @@ canvas,
   user-select: none;
   -webkit-user-select: none;
   opacity: 0.82;
+}
+
+/* ========================================================================= */
+/* 📱 📐 PERFECT MOBILE FRAMING & STORY MODAL STYLING */
+/* ========================================================================= */
+.story-viewer-modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  height: 88vh;
+  max-height: 820px;
+  border-radius: 24px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 70px rgba(0,0,0,0.95), 0 0 40px rgba(0, 245, 212, 0.2);
+  background: #07080c;
+  animation: modalFadeIn 0.25s ease;
+}
+
+@media (max-width: 768px) {
+  .story-viewer-modal-card {
+    max-width: 100vw;
+    width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    border: none !important;
+  }
 }
 

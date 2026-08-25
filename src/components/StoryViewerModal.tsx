@@ -141,20 +141,9 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
   return (
     <div className="modal-backdrop" style={{ zIndex: 10000, background: 'rgba(0,0,0,0.92)' }}>
       <div 
+        className="story-viewer-modal-card"
         style={{
-          position: 'relative',
-          width: '100%',
-          maxWidth: 420,
-          height: '88vh',
-          maxHeight: 780,
-          borderRadius: 24,
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: '0 25px 70px rgba(0,0,0,0.95), 0 0 40px rgba(0, 245, 212, 0.2)',
           border: currentStory.isDeus ? '2px solid #ffb703' : '1px solid var(--border-glow)',
-          background: '#07080c',
-          animation: 'modalFadeIn 0.25s ease'
         }}
         onMouseDown={() => setIsPaused(true)}
         onMouseUp={() => setIsPaused(false)}
