@@ -1,5 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { isValidCPF, isValidPhone, isValidEmail, validateRegistrationForm } from '../utils/securityUtils';
+import { 
+  isValidCPF, 
+  isValidPhone, 
+  isValidEmail, 
+  validateRegistrationForm,
+  isValidRealFullName,
+  formatCPF,
+  formatCEP,
+  maskCPF
+} from '../utils/securityUtils';
 import { calculateMasterDeusSplit, type EventPhoto } from '../types';
 import { MOCK_USERS, MOCK_EVENTS, MOCK_PHOTOS } from '../data/mockDatabase';
 import { enrollNewUserFace, simulateFaceRecognition } from '../services/biometricService';
@@ -62,6 +71,17 @@ describe('🧪 Complete Online System Test: All Links, Registrations, Modals & W
         photoDataUrl: 'data:image/jpeg;base64,mockPhotoBase64',
       });
       expect(formValidation.isValid).toBe(true);
+    });
+
+    it('deve validar nome verdadeiro e mascarar CPF e formatar CEP corretamente', () => {
+      expect(isValidRealFullName('Eder Andrade')).toBe(true);
+      expect(isValidRealFullName('Eder de Andrade Pereira')).toBe(true);
+      expect(isValidRealFullName('Eder')).toBe(false);
+      expect(isValidRealFullName('')).toBe(false);
+
+      expect(formatCPF('11144477735')).toBe('111.444.777-35');
+      expect(maskCPF('111.444.777-35')).toBe('***.444.777-**');
+      expect(formatCEP('38740000')).toBe('38740-000');
     });
 
     it('deve cadastrar novo usuário VIP com biometria facial e sessão persistida', () => {

@@ -157,11 +157,7 @@ export const InstagramApp: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleUpdateUserAvatar = (newAvatarUrl: string) => {
-    const updatedUser: UserProfile = {
-      ...currentUser,
-      avatar: newAvatarUrl,
-    };
+  const handleUpdateUserProfile = (updatedUser: UserProfile) => {
     setCurrentUser(updatedUser);
     setAllUsers((prev) => {
       const updated = prev.map((u) => (u.id === updatedUser.id ? updatedUser : u));
@@ -177,6 +173,16 @@ export const InstagramApp: React.FC = () => {
       return updated;
     });
     dbService.saveUser(updatedUser);
+    setUploadSuccessToast('✅ Cadastro e dados oficiais atualizados com sucesso!');
+    setTimeout(() => setUploadSuccessToast(null), 4000);
+  };
+
+  const handleUpdateUserAvatar = (newAvatarUrl: string) => {
+    const updatedUser: UserProfile = {
+      ...currentUser,
+      avatar: newAvatarUrl,
+    };
+    handleUpdateUserProfile(updatedUser);
     setUploadSuccessToast('📸 Foto de perfil atualizada com sucesso!');
     setTimeout(() => setUploadSuccessToast(null), 4000);
   };
@@ -380,6 +386,7 @@ export const InstagramApp: React.FC = () => {
                 onSelectUser={(u) => handleSelectUser(u)}
                 onLockSession={() => setActiveTab('feed')}
                 onUpdateAvatar={handleUpdateUserAvatar}
+                onUpdateProfile={handleUpdateUserProfile}
               />
             </div>
           )}

@@ -56,6 +56,54 @@ export function isValidPhone(phone: string): boolean {
 }
 
 /**
+ * Validates whether a name is a real full name (at least 2 words, >= 5 chars).
+ */
+export function isValidRealFullName(name: string): boolean {
+  if (!name || typeof name !== 'string') return false;
+  const trimmed = name.trim();
+  const parts = trimmed.split(/\s+/).filter(Boolean);
+  if (parts.length < 2) return false;
+  if (trimmed.length < 5) return false;
+  return parts.every((p) => p.length >= 2 && /^[\p{L}'-]+$/u.test(p));
+}
+
+/**
+ * Formats Brazilian CPF with standard mask: 000.000.000-00
+ */
+export function formatCPF(cpf: string): string {
+  const digits = cpf.replace(/\D/g, '').slice(0, 11);
+  if (digits.length > 9) {
+    return digits.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2})$/, '$1.$2.$3-$4');
+  } else if (digits.length > 6) {
+    return digits.replace(/^(\d{3})(\d{3})(\d{0,3})$/, '$1.$2.$3');
+  } else if (digits.length > 3) {
+    return digits.replace(/^(\d{3})(\d{0,3})$/, '$1.$2');
+  }
+  return digits;
+}
+
+/**
+ * Masks CPF for secure public display: ***.456.789-**
+ */
+export function maskCPF(cpf?: string): string {
+  if (!cpf) return '***.***.***-**';
+  const clean = cpf.replace(/\D/g, '');
+  if (clean.length !== 11) return '***.***.***-**';
+  return `***.${clean.slice(3, 6)}.${clean.slice(6, 9)}-**`;
+}
+
+/**
+ * Formats Brazilian CEP with standard mask: 00000-000
+ */
+export function formatCEP(cep: string): string {
+  const digits = cep.replace(/\D/g, '').slice(0, 8);
+  if (digits.length > 5) {
+    return digits.replace(/^(\d{5})(\d{0,3})$/, '$1-$2');
+  }
+  return digits;
+}
+
+/**
  * Formats WhatsApp phone with clean mask: (XX) XXXXX-XXXX
  */
 export function formatWhatsAppPhone(phone: string): string {

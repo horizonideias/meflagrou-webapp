@@ -5,15 +5,19 @@ export interface UserProfile {
   cpf?: string;
   whatsapp?: string;
   phone?: string;
-  address?: string;
-  cep?: string;
+  street?: string; // Rua / Logradouro
+  number?: string; // Número
+  neighborhood?: string; // Bairro
+  address?: string; // Endereço formatado / resumo
+  cep?: string; // CEP
+  city: string; // Cidade
+  state: string; // Estado
+  maritalStatus?: 'Solteiro(a)' | 'Casado(a)' | 'Divorciado(a)' | 'Viúvo(a)' | 'União Estável' | 'Separado(a)' | string; // Estado Civil
   email1?: string;
   email2?: string;
   email?: string;
   avatar: string;
   bio: string;
-  city: string;
-  state: string;
   verifiedAt: string;
   facialDescriptor: number[]; // 128-d simulated facial vector embedding
   faceSignatureId: string;
@@ -31,6 +35,7 @@ export interface UserProfile {
     instagram?: string;
     tiktok?: string;
     twitter?: string;
+    x?: string;
   };
   achievements?: {
     id: string;

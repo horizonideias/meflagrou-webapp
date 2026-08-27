@@ -22,14 +22,15 @@ import {
   Menu,
   ArrowLeft,
   Download,
-  ShoppingBag
+  ShoppingBag,
+  Edit3
 } from 'lucide-react';
 import type { UserProfile, EventPhoto } from '../types';
 import { MOCK_PHOTOS, MOCK_USERS, MOCK_EVENTS } from '../data/mockDatabase';
 import { generateUserSamplePhotos } from '../data/userPhotoGenerator';
 import { usePwaInstall } from '../hooks/usePwaInstall';
 import { InstallAppModal } from './InstallAppModal';
-import { InstagramIcon } from './Icons';
+import { InstagramIcon, TikTokIcon, XIcon } from './Icons';
 import { InteractiveStage } from './InteractiveStage';
 import { useCart } from '../context/CartContext';
 import { PhotoUploadDashboard } from './PhotoUploadDashboard';
@@ -46,7 +47,9 @@ import { SquadMatchBundleModal } from './SquadMatchBundleModal';
 import { WristbandCheckInModal } from './WristbandCheckInModal';
 import { PhotographerLeagueRankingModal } from './PhotographerLeagueRankingModal';
 import { FeaturesHubMenuModal } from './FeaturesHubMenuModal';
+import { EditProfileRegistrationModal } from './EditProfileRegistrationModal';
 import { MeflagrouLogo } from './MeflagrouLogo';
+import { maskCPF, formatWhatsAppPhone } from '../utils/securityUtils';
 
 interface SocialProfileProps {
   user: UserProfile;
@@ -54,6 +57,7 @@ interface SocialProfileProps {
   onSelectUser: (user: UserProfile) => void;
   onLockSession: () => void;
   onUpdateAvatar?: (newAvatarUrl: string) => void;
+  onUpdateProfile?: (updatedUser: UserProfile) => void;
 }
 
 export const SocialProfile: React.FC<SocialProfileProps> = ({
@@ -62,6 +66,7 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
   onSelectUser,
   onLockSession,
   onUpdateAvatar,
+  onUpdateProfile,
 }) => {
   const { 
     isPhotoPurchased, 
@@ -101,6 +106,7 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
 
   // Modals
   const [isInstallModalOpen, setIsInstallModalOpen] = useState<boolean>(false);
+  const [isEditRegistrationOpen, setIsEditRegistrationOpen] = useState<boolean>(false);
   const [isClientUploadOpen, setIsClientUploadOpen] = useState<boolean>(false);
   const [editingSalePhoto, setEditingSalePhoto] = useState<EventPhoto | null>(null);
   const [isRecapModalOpen, setIsRecapModalOpen] = useState<boolean>(false);
@@ -115,6 +121,15 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
   const [isWristbandOpen, setIsWristbandOpen] = useState<boolean>(false);
   const [isLeagueOpen, setIsLeagueOpen] = useState<boolean>(false);
   const [isHubMenuOpen, setIsHubMenuOpen] = useState<boolean>(false);
+
+  const handleSaveRegistration = (updatedUser: UserProfile) => {
+    if (onUpdateProfile) {
+      onUpdateProfile(updatedUser);
+    }
+    setToastMessage('✅ Cadastro e dados oficiais atualizados com sucesso!');
+    setCopiedToast(true);
+    setTimeout(() => setCopiedToast(false), 3500);
+  };
 
   // Aggregate photos for this profile from all persistent stores
   const savedUserPhotos = getUserSavedPhotos(user.id);
@@ -221,6 +236,21 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
         </div>
 
         <div className="profile-header-actions-right">
+          <button
+            onClick={() => setIsEditRegistrationOpen(true)}
+            className="profile-top-action-pill edit-registration-pill"
+            title="Editar Cadastro Oficial e Redes Sociais"
+            style={{
+              background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.18), rgba(255, 0, 122, 0.18))',
+              borderColor: 'rgba(0, 240, 255, 0.5)',
+              color: '#fff',
+              fontWeight: 700
+            }}
+          >
+            <Edit3 size={13} color="var(--accent-cyan)" />
+            <span>⚙️ Cadastro & Dados</span>
+          </button>
+
           <label className="profile-top-action-pill change-photo-pill" title="Mudar Foto de Perfil">
             <Camera size={13} />
             <span>Mudar Foto</span>
@@ -348,6 +378,19 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
         {/* 3. Ações Rápidas em Pílulas */}
         <div className="profile-hero-action-buttons-grid">
           <button
+            onClick={() => setIsEditRegistrationOpen(true)}
+            className="hero-action-btn edit-reg"
+            style={{
+              background: 'rgba(0, 240, 255, 0.12)',
+              borderColor: 'rgba(0, 240, 255, 0.35)',
+              color: 'var(--accent-cyan)'
+            }}
+          >
+            <Edit3 size={12} color="var(--accent-cyan)" />
+            <span>Cadastro & Dados</span>
+          </button>
+
+          <button
             onClick={() => setIsRecapModalOpen(true)}
             className="hero-action-btn recap"
           >
@@ -410,6 +453,218 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
             <Share2 size={12} />
             <span>Compartilhar</span>
           </button>
+        </div>
+
+        {/* 3.5 🛡️ BLOCO DE CADASTRO OFICIAL, ENDEREÇO & REDES SOCIAIS */}
+        <div 
+          className="profile-official-registration-badge-card"
+          style={{
+            marginTop: 14,
+            padding: '16px 18px',
+            background: 'linear-gradient(135deg, rgba(14, 18, 30, 0.9) 0%, rgba(8, 10, 16, 0.95) 100%)',
+            borderRadius: 16,
+            border: '1px solid rgba(0, 240, 255, 0.2)',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ padding: 5, borderRadius: 8, background: 'rgba(0, 240, 255, 0.15)', color: 'var(--accent-cyan)', display: 'flex' }}>
+                <ShieldCheck size={16} />
+              </div>
+              <h4 style={{ fontSize: '0.88rem', fontWeight: 800, margin: 0, color: '#fff', letterSpacing: '-0.01em' }}>
+                Cadastro Oficial & Identidade VIP
+              </h4>
+              <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: 'rgba(0, 255, 178, 0.15)', color: 'var(--accent-teal)', border: '1px solid rgba(0, 255, 178, 0.3)' }}>
+                ✅ Validado
+              </span>
+            </div>
+
+            <button
+              onClick={() => setIsEditRegistrationOpen(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+                padding: '5px 12px',
+                background: 'rgba(0, 240, 255, 0.1)',
+                border: '1px solid rgba(0, 240, 255, 0.3)',
+                borderRadius: 8,
+                color: 'var(--accent-cyan)',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+              title="Editar opções de cadastro"
+            >
+              <Edit3 size={12} />
+              <span>Editar Dados</span>
+            </button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px 14px' }}>
+            {/* Nome Completo */}
+            <div>
+              <span style={{ display: 'block', fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>Nome Verdadeiro:</span>
+              <strong style={{ fontSize: '0.85rem', color: '#fff', fontWeight: 700 }}>{user.name}</strong>
+            </div>
+
+            {/* CPF Mascarado */}
+            <div>
+              <span style={{ display: 'block', fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>CPF Oficial:</span>
+              <strong style={{ fontSize: '0.85rem', color: 'var(--accent-cyan)', fontWeight: 700 }}>
+                {maskCPF(user.cpf)}
+              </strong>
+            </div>
+
+            {/* Estado Civil */}
+            <div>
+              <span style={{ display: 'block', fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>Estado Civil:</span>
+              <strong style={{ fontSize: '0.85rem', color: '#fff', fontWeight: 600 }}>
+                {user.maritalStatus || 'Solteiro(a)'}
+              </strong>
+            </div>
+
+            {/* WhatsApp */}
+            <div>
+              <span style={{ display: 'block', fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>WhatsApp:</span>
+              <strong style={{ fontSize: '0.85rem', color: 'var(--accent-teal)', fontWeight: 700 }}>
+                {user.whatsapp || user.phone ? formatWhatsAppPhone(user.whatsapp || user.phone || '') : 'Não informado'}
+              </strong>
+            </div>
+
+            {/* Endereço Completo */}
+            <div style={{ gridColumn: '1 / -1' }}>
+              <span style={{ display: 'block', fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>Endereço Residencial:</span>
+              <span style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.85)' }}>
+                {user.street 
+                  ? `${user.street}${user.number ? ', nº ' + user.number : ''}${user.neighborhood ? ' - ' + user.neighborhood : ''}, ${user.city} - ${user.state || 'SP'}${user.cep ? ' (CEP ' + user.cep + ')' : ''}`
+                  : `${user.city || 'São Paulo'}, ${user.state || 'SP'}`}
+              </span>
+            </div>
+
+            {/* Redes Sociais */}
+            <div style={{ gridColumn: '1 / -1', marginTop: 4 }}>
+              <span style={{ display: 'block', fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontWeight: 600, marginBottom: 6 }}>
+                Redes Sociais Oficiais:
+              </span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {/* Instagram */}
+                <a
+                  href={`https://instagram.com/${(user.socialLinks?.instagram || user.handle || '').replace(/^@/, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '5px 10px',
+                    borderRadius: 20,
+                    background: 'rgba(225, 48, 108, 0.15)',
+                    border: '1px solid rgba(225, 48, 108, 0.35)',
+                    color: '#fff',
+                    fontSize: '0.76rem',
+                    textDecoration: 'none',
+                    fontWeight: 600
+                  }}
+                  title="Abrir Instagram"
+                >
+                  <InstagramIcon size={12} color="#E1306C" />
+                  <span>@{user.socialLinks?.instagram || user.handle}</span>
+                </a>
+
+                {/* TikTok */}
+                {user.socialLinks?.tiktok ? (
+                  <a
+                    href={`https://tiktok.com/@${user.socialLinks.tiktok.replace(/^@/, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '5px 10px',
+                      borderRadius: 20,
+                      background: 'rgba(255, 0, 122, 0.15)',
+                      border: '1px solid rgba(255, 0, 122, 0.35)',
+                      color: '#fff',
+                      fontSize: '0.76rem',
+                      textDecoration: 'none',
+                      fontWeight: 600
+                    }}
+                    title="Abrir TikTok"
+                  >
+                    <TikTokIcon size={12} color="#ff007a" />
+                    <span>@{user.socialLinks.tiktok.replace(/^@/, '')}</span>
+                  </a>
+                ) : (
+                  <button
+                    onClick={() => setIsEditRegistrationOpen(true)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '5px 10px',
+                      borderRadius: 20,
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      color: 'rgba(255,255,255,0.6)',
+                      fontSize: '0.74rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <TikTokIcon size={12} color="rgba(255,255,255,0.4)" />
+                    <span>+ TikTok</span>
+                  </button>
+                )}
+
+                {/* X */}
+                {(user.socialLinks?.x || user.socialLinks?.twitter) ? (
+                  <a
+                    href={`https://x.com/${(user.socialLinks?.x || user.socialLinks?.twitter || '').replace(/^@/, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '5px 10px',
+                      borderRadius: 20,
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.25)',
+                      color: '#fff',
+                      fontSize: '0.76rem',
+                      textDecoration: 'none',
+                      fontWeight: 600
+                    }}
+                    title="Abrir X (Twitter)"
+                  >
+                    <XIcon size={11} color="#fff" />
+                    <span>@{(user.socialLinks?.x || user.socialLinks?.twitter || '').replace(/^@/, '')}</span>
+                  </a>
+                ) : (
+                  <button
+                    onClick={() => setIsEditRegistrationOpen(true)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '5px 10px',
+                      borderRadius: 20,
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      color: 'rgba(255,255,255,0.6)',
+                      fontSize: '0.74rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <XIcon size={11} color="rgba(255,255,255,0.4)" />
+                    <span>+ X</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* 4. Conquistas & Find My Squad em Linha */}
@@ -779,6 +1034,15 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
           onOpenWristband={() => setIsWristbandOpen(true)}
           onOpenLeague={() => setIsLeagueOpen(true)}
           onOpenHallOfFame={() => setIsLeaderboardOpen(true)}
+        />
+      )}
+
+      {isEditRegistrationOpen && (
+        <EditProfileRegistrationModal
+          user={user}
+          isOpen={isEditRegistrationOpen}
+          onClose={() => setIsEditRegistrationOpen(false)}
+          onSave={handleSaveRegistration}
         />
       )}
 
