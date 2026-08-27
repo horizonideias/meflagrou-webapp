@@ -382,6 +382,7 @@ export const InstagramApp: React.FC = () => {
             <div className="instagram-profile-wrapper">
               <SocialProfile
                 user={currentUser}
+                currentUser={currentUser}
                 onOpenPhotoModal={(photo, list) => handleOpenPhotoModal(photo, list)}
                 onSelectUser={(u) => handleSelectUser(u)}
                 onLockSession={() => setActiveTab('feed')}

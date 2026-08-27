@@ -90,19 +90,19 @@ export const InstagramSidebar: React.FC<InstagramSidebarProps> = ({
           </button>
         )}
 
-        {/* 💬 Comunidade & Chat Online AO VIVO */}
+        {/* 💬 ChatOnline AO VIVO */}
         {onOpenCommunityChat && (
           <button
             onClick={onOpenCommunityChat}
             className="instagram-nav-item"
-            title="Comunidade VIP & Chat Online em Tempo Real"
+            title="ChatOnline em Tempo Real"
           >
             <div style={{ position: 'relative' }}>
               <MessageSquare size={22} className="nav-icon text-teal" />
               <span className="nav-badge-dot" style={{ background: '#00f5d4', boxShadow: '0 0 8px #00f5d4' }} />
             </div>
             <span className="nav-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              Comunidade & Chat
+              ChatOnline
               <span style={{ fontSize: '0.62rem', background: 'rgba(255, 0, 122, 0.2)', border: '1px solid #ff007a', color: '#ff007a', padding: '1px 5px', borderRadius: 6, fontWeight: 800 }}>LIVE</span>
             </span>
           </button>

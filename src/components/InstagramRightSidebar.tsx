@@ -233,7 +233,7 @@ export const InstagramRightSidebar: React.FC<InstagramRightSidebarProps> = ({
           </div>
         </div>
 
-        {/* 2.15 💬 COMUNIDADE VIP & CHAT AO VIVO */}
+        {/* 2.15 💬 CHATONLINE AO VIVO */}
         {onOpenCommunityChat && (
           <div 
             className="right-sidebar-block"
@@ -249,7 +249,7 @@ export const InstagramRightSidebar: React.FC<InstagramRightSidebarProps> = ({
             <div className="sidebar-block-header" style={{ marginBottom: 4 }}>
               <div className="block-title-row">
                 <span style={{ fontSize: '1rem' }}>💬</span>
-                <span className="block-title" style={{ color: '#00f5d4', fontWeight: 800 }}>Comunidade & Chat</span>
+                <span className="block-title" style={{ color: '#00f5d4', fontWeight: 800 }}>ChatOnline</span>
               </div>
               <span style={{ fontSize: '0.6rem', fontWeight: 800, background: 'rgba(255, 0, 122, 0.2)', border: '1px solid #ff007a', color: '#ff007a', padding: '1px 5px', borderRadius: 6 }}>AO VIVO</span>
             </div>

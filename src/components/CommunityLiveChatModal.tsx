@@ -128,7 +128,7 @@ export const CommunityLiveChatModal: React.FC<CommunityLiveChatModalProps> = ({
       senderAvatar: '/founder_avatar.jpg',
       isFounder: true,
       channelId: 'general',
-      text: 'Sejam todos bem-vindos à Comunidade Oficial meflagrou.com! 🎉 Todas as fotos em 8K sem compressão já estão no feed!',
+      text: 'Sejam todos bem-vindos ao ChatOnline Oficial meflagrou.com! 🎉 Todas as fotos em 8K sem compressão já estão no feed!',
       timestamp: new Date(Date.now() - 3600000).toISOString(),
       timeLabel: '13:40',
       reactions: { '🔥': 42, '👑': 28 }
@@ -304,7 +304,10 @@ export const CommunityLiveChatModal: React.FC<CommunityLiveChatModalProps> = ({
           {/* Header */}
           <div className="community-sidebar-header">
             <div className="community-logo-row">
-              <MeflagrouLogo height={26} animated={true} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <MeflagrouLogo height={24} animated={true} />
+                <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#00f5d4', letterSpacing: '-0.02em' }}>ChatOnline</span>
+              </div>
               <span className="community-live-badge">
                 <span className="live-pulse-dot" />
                 AO VIVO

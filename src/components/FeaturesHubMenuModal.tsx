@@ -459,7 +459,7 @@ export const FeaturesHubMenuModal: React.FC<FeaturesHubMenuModalProps> = ({
               </div>
             </div>
 
-            {/* Comunidade & IAs Humanas */}
+            {/* ChatOnline */}
             {onOpenAICommunity && (
               <div
                 onClick={() => handleItemClick(onOpenAICommunity)}
@@ -491,12 +491,12 @@ export const FeaturesHubMenuModal: React.FC<FeaturesHubMenuModalProps> = ({
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 800, fontSize: '0.82rem', color: '#ffffff', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span>Comunidade & IAs</span>
+                    <span>ChatOnline</span>
                     <span style={{ fontSize: '0.58rem', background: '#00f5d4', color: '#07080c', padding: '1px 5px', borderRadius: 6, fontWeight: 900 }}>
                       AO VIVO
                     </span>
                   </div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>Interações a cada minuto</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>Chat com salas de festas e directs</div>
                 </div>
               </div>
             )}

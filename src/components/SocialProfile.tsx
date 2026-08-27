@@ -53,6 +53,7 @@ import { maskCPF, formatWhatsAppPhone } from '../utils/securityUtils';
 
 interface SocialProfileProps {
   user: UserProfile;
+  currentUser?: UserProfile;
   onOpenPhotoModal: (photo: EventPhoto, photoList: EventPhoto[]) => void;
   onSelectUser: (user: UserProfile) => void;
   onLockSession: () => void;
@@ -62,6 +63,7 @@ interface SocialProfileProps {
 
 export const SocialProfile: React.FC<SocialProfileProps> = ({
   user,
+  currentUser,
   onOpenPhotoModal,
   onSelectUser,
   onLockSession,
@@ -79,6 +81,7 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
   } = useCart();
 
   const { triggerInstall } = usePwaInstall();
+  const isOwnProfile = currentUser ? currentUser.id === user.id : true;
   const isDeusProfile = user.id === 'user_founder';
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const [selectedEventId, setSelectedEventId] = useState<string>('all');
@@ -236,26 +239,30 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
         </div>
 
         <div className="profile-header-actions-right">
-          <button
-            onClick={() => setIsEditRegistrationOpen(true)}
-            className="profile-top-action-pill edit-registration-pill"
-            title="Editar Cadastro Oficial e Redes Sociais"
-            style={{
-              background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.18), rgba(255, 0, 122, 0.18))',
-              borderColor: 'rgba(0, 240, 255, 0.5)',
-              color: '#fff',
-              fontWeight: 700
-            }}
-          >
-            <Edit3 size={13} color="var(--accent-cyan)" />
-            <span>⚙️ Cadastro & Dados</span>
-          </button>
+          {isOwnProfile && (
+            <button
+              onClick={() => setIsEditRegistrationOpen(true)}
+              className="profile-top-action-pill edit-registration-pill"
+              title="Editar Cadastro Oficial e Redes Sociais"
+              style={{
+                background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.18), rgba(255, 0, 122, 0.18))',
+                borderColor: 'rgba(0, 240, 255, 0.5)',
+                color: '#fff',
+                fontWeight: 700
+              }}
+            >
+              <Edit3 size={13} color="var(--accent-cyan)" />
+              <span>⚙️ Cadastro & Dados</span>
+            </button>
+          )}
 
-          <label className="profile-top-action-pill change-photo-pill" title="Mudar Foto de Perfil">
-            <Camera size={13} />
-            <span>Mudar Foto</span>
-            <input type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: 'none' }} />
-          </label>
+          {isOwnProfile && (
+            <label className="profile-top-action-pill change-photo-pill" title="Mudar Foto de Perfil">
+              <Camera size={13} />
+              <span>Mudar Foto</span>
+              <input type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: 'none' }} />
+            </label>
+          )}
 
           <button
             onClick={() => triggerInstall(() => setIsInstallModalOpen(true))}
@@ -377,18 +384,20 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
 
         {/* 3. Ações Rápidas em Pílulas */}
         <div className="profile-hero-action-buttons-grid">
-          <button
-            onClick={() => setIsEditRegistrationOpen(true)}
-            className="hero-action-btn edit-reg"
-            style={{
-              background: 'rgba(0, 240, 255, 0.12)',
-              borderColor: 'rgba(0, 240, 255, 0.35)',
-              color: 'var(--accent-cyan)'
-            }}
-          >
-            <Edit3 size={12} color="var(--accent-cyan)" />
-            <span>Cadastro & Dados</span>
-          </button>
+          {isOwnProfile && (
+            <button
+              onClick={() => setIsEditRegistrationOpen(true)}
+              className="hero-action-btn edit-reg"
+              style={{
+                background: 'rgba(0, 240, 255, 0.12)',
+                borderColor: 'rgba(0, 240, 255, 0.35)',
+                color: 'var(--accent-cyan)'
+              }}
+            >
+              <Edit3 size={12} color="var(--accent-cyan)" />
+              <span>Cadastro & Dados</span>
+            </button>
+          )}
 
           <button
             onClick={() => setIsRecapModalOpen(true)}
@@ -480,26 +489,28 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
               </span>
             </div>
 
-            <button
-              onClick={() => setIsEditRegistrationOpen(true)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 5,
-                padding: '5px 12px',
-                background: 'rgba(0, 240, 255, 0.1)',
-                border: '1px solid rgba(0, 240, 255, 0.3)',
-                borderRadius: 8,
-                color: 'var(--accent-cyan)',
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                cursor: 'pointer'
-              }}
-              title="Editar opções de cadastro"
-            >
-              <Edit3 size={12} />
-              <span>Editar Dados</span>
-            </button>
+            {isOwnProfile && (
+              <button
+                onClick={() => setIsEditRegistrationOpen(true)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  padding: '5px 12px',
+                  background: 'rgba(0, 240, 255, 0.1)',
+                  border: '1px solid rgba(0, 240, 255, 0.3)',
+                  borderRadius: 8,
+                  color: 'var(--accent-cyan)',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+                title="Editar opções de cadastro"
+              >
+                <Edit3 size={12} />
+                <span>Editar Dados</span>
+              </button>
+            )}
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px 14px' }}>
@@ -509,13 +520,15 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
               <strong style={{ fontSize: '0.85rem', color: '#fff', fontWeight: 700 }}>{user.name}</strong>
             </div>
 
-            {/* CPF Mascarado */}
-            <div>
-              <span style={{ display: 'block', fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>CPF Oficial:</span>
-              <strong style={{ fontSize: '0.85rem', color: 'var(--accent-cyan)', fontWeight: 700 }}>
-                {maskCPF(user.cpf)}
-              </strong>
-            </div>
+            {/* CPF Mascarado - Visível APENAS para o próprio usuário (Privacidade Total) */}
+            {isOwnProfile && (
+              <div>
+                <span style={{ display: 'block', fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>CPF Oficial (Privado):</span>
+                <strong style={{ fontSize: '0.85rem', color: 'var(--accent-cyan)', fontWeight: 700 }}>
+                  {maskCPF(user.cpf)}
+                </strong>
+              </div>
+            )}
 
             {/* Estado Civil */}
             <div>
