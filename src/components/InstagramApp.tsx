@@ -444,6 +444,7 @@ export const InstagramApp: React.FC = () => {
             if (found) handleSelectUser(found);
           }}
           onPhotoChange={(newPhoto) => setActiveModalPhoto(newPhoto)}
+          onUpdateAvatar={handleUpdateUserAvatar}
         />
       )}
 

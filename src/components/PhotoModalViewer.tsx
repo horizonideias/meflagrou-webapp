@@ -24,7 +24,8 @@ import {
   Send, 
   MessageCircle,
   UserPlus,
-  Lock
+  Lock,
+  Camera
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import type { EventPhoto, UserProfile } from '../types';
@@ -51,6 +52,7 @@ interface PhotoModalViewerProps {
   onClose: () => void;
   onSelectUserByTag?: (userId: string) => void;
   onPhotoChange: (photo: EventPhoto) => void;
+  onUpdateAvatar?: (newAvatarUrl: string) => void;
 }
 
 export const PhotoModalViewer: React.FC<PhotoModalViewerProps> = ({
@@ -59,6 +61,7 @@ export const PhotoModalViewer: React.FC<PhotoModalViewerProps> = ({
   currentUser,
   onClose,
   onPhotoChange,
+  onUpdateAvatar,
 }) => {
   const { 
     addToCart, 
@@ -474,6 +477,24 @@ export const PhotoModalViewer: React.FC<PhotoModalViewerProps> = ({
 
           {/* Bottom Right: Like, Comments, Share Stories, Tools */}
           <div className="floating-bottom-right">
+            {/* Definir como Foto de Perfil se a Foto for Comprada */}
+            {isPurchased && onUpdateAvatar && (
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onUpdateAvatar(photo.url);
+                  setToastMessage('✨ Foto definida como seu avatar oficial!');
+                  setTimeout(() => setToastMessage(null), 3500);
+                }}
+                className="floating-action-pill highlight"
+                title="Definir esta foto comprada como seu avatar de perfil oficial"
+                style={{ borderColor: 'var(--accent-cyan)', color: 'var(--accent-cyan)' }}
+              >
+                <Camera size={18} color="var(--accent-cyan)" />
+                <span>Usar no Perfil</span>
+              </button>
+            )}
+
             {/* Adicionar ao Meu Perfil Action Pill */}
             <button 
               onClick={handleToggleAddToProfile}

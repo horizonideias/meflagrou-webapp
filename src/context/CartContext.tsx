@@ -490,7 +490,37 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         newClientPhotos.unshift(transferredPhoto);
       }
+
+      // Automatically add to buyer's dedicated gallery
+      try {
+        const storageKey = `meflagrou_user_saved_photos_${buyer.id}`;
+        const saved = localStorage.getItem(storageKey);
+        const userList: EventPhoto[] = saved ? JSON.parse(saved) : [];
+        const filtered = userList.filter((itemPhoto) => itemPhoto.id !== transferredPhoto.id);
+        filtered.unshift(transferredPhoto);
+        localStorage.setItem(storageKey, JSON.stringify(filtered));
+      } catch {
+        // fallback
+      }
     });
+
+    // Automatically set the first purchased photo as the buyer's profile photo
+    const firstPurchasedPhoto = itemsToProcess[0]?.photo;
+    if (firstPurchasedPhoto && buyer && buyer.id) {
+      try {
+        const session = localStorage.getItem('meflagrou_active_session');
+        if (session) {
+          const currentSessionUser = JSON.parse(session);
+          if (currentSessionUser.id === buyer.id) {
+            currentSessionUser.avatar = firstPurchasedPhoto.url;
+            localStorage.setItem('meflagrou_active_session', JSON.stringify(currentSessionUser));
+            dbService.saveUser(currentSessionUser);
+          }
+        }
+      } catch {
+        // fallback
+      }
+    }
 
     setPhotoTradings(updatedTradings);
     setOwnerCustomPrices(updatedPrices);

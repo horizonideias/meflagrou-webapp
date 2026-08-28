@@ -48,6 +48,7 @@ import { WristbandCheckInModal } from './WristbandCheckInModal';
 import { PhotographerLeagueRankingModal } from './PhotographerLeagueRankingModal';
 import { FeaturesHubMenuModal } from './FeaturesHubMenuModal';
 import { EditProfileRegistrationModal } from './EditProfileRegistrationModal';
+import { SelectAvatarFromGalleryModal } from './SelectAvatarFromGalleryModal';
 import { MeflagrouLogo } from './MeflagrouLogo';
 import { maskCPF, formatWhatsAppPhone } from '../utils/securityUtils';
 
@@ -89,26 +90,9 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
   const [copiedToast, setCopiedToast] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string>('');
 
-  // Handle Photo Upload for Changing Profile Avatar
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const dataUrl = event.target?.result as string;
-        if (dataUrl && onUpdateAvatar) {
-          onUpdateAvatar(dataUrl);
-          setToastMessage('📸 Foto de perfil alterada com sucesso!');
-          setCopiedToast(true);
-          setTimeout(() => setCopiedToast(false), 3500);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   // Modals
   const [isInstallModalOpen, setIsInstallModalOpen] = useState<boolean>(false);
+  const [isSelectAvatarModalOpen, setIsSelectAvatarModalOpen] = useState<boolean>(false);
   const [isEditRegistrationOpen, setIsEditRegistrationOpen] = useState<boolean>(false);
   const [isClientUploadOpen, setIsClientUploadOpen] = useState<boolean>(false);
   const [editingSalePhoto, setEditingSalePhoto] = useState<EventPhoto | null>(null);
@@ -257,11 +241,20 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
           )}
 
           {isOwnProfile && (
-            <label className="profile-top-action-pill change-photo-pill" title="Mudar Foto de Perfil">
-              <Camera size={13} />
-              <span>Mudar Foto</span>
-              <input type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: 'none' }} />
-            </label>
+            <button
+              onClick={() => setIsSelectAvatarModalOpen(true)}
+              className="profile-top-action-pill select-avatar-pill"
+              title="Escolher Foto de Perfil da sua Galeria Comprada"
+              style={{
+                background: 'rgba(0, 240, 255, 0.12)',
+                borderColor: 'rgba(0, 240, 255, 0.35)',
+                color: '#fff',
+                fontWeight: 600
+              }}
+            >
+              <Camera size={13} color="var(--accent-cyan)" />
+              <span>Foto de Perfil</span>
+            </button>
           )}
 
           <button
@@ -290,20 +283,31 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
         <div className="profile-hero-ambient-glow" />
 
         <div className="profile-hero-main-row">
-          {/* Avatar com Anel Biométrico & Botão de Alteração */}
-          <div className="profile-hero-avatar-wrap">
+          {/* Avatar com Anel Biométrico & Botão de Seleção da Galeria */}
+          <div 
+            className="profile-hero-avatar-wrap"
+            onClick={() => isOwnProfile && setIsSelectAvatarModalOpen(true)}
+            style={{ cursor: isOwnProfile ? 'pointer' : 'default' }}
+            title={isOwnProfile ? "Clique para escolher uma foto da sua galeria de fotos compradas" : user.name}
+          >
             <img
               src={user.avatar}
               alt={user.name}
               className="profile-hero-avatar-img"
             />
-            <label 
-              className="profile-hero-change-photo-btn" 
-              title="Clique para Mudar Foto de Perfil"
-            >
-              <Camera size={14} />
-              <input type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: 'none' }} />
-            </label>
+            {isOwnProfile && (
+              <button 
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsSelectAvatarModalOpen(true);
+                }}
+                className="profile-hero-change-photo-btn" 
+                title="Escolher Foto de Perfil da sua Galeria Comprada"
+              >
+                <Camera size={14} />
+              </button>
+            )}
             <div 
               className={`profile-hero-badge-corner ${isDeusProfile ? 'founder' : 'vip'}`}
               title="Identidade Biométrica 8K Validada"
@@ -889,25 +893,50 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
                       <span className="overlay-likes-count">🔥 {photo.likesCount} curtidas</span>
                     </div>
 
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onOpenPhotoModal(photo, filteredPhotos);
-                      }}
-                      className="grid-photo-action-btn"
-                    >
-                      {purchased ? (
-                        <>
-                          <Download size={13} />
-                          <span>Baixar</span>
-                        </>
-                      ) : (
-                        <>
-                          <ShoppingBag size={13} />
-                          <span>Comprar</span>
-                        </>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      {purchased && isOwnProfile && onUpdateAvatar && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onUpdateAvatar(photo.url);
+                            setToastMessage('✨ Foto definida como foto de perfil!');
+                            setCopiedToast(true);
+                            setTimeout(() => setCopiedToast(false), 3500);
+                          }}
+                          className="grid-photo-action-btn avatar-btn"
+                          title="Definir esta foto comprada como sua foto de perfil"
+                          style={{
+                            background: 'rgba(0, 240, 255, 0.2)',
+                            borderColor: 'rgba(0, 240, 255, 0.5)',
+                            color: '#fff'
+                          }}
+                        >
+                          <Camera size={12} color="var(--accent-cyan)" />
+                          <span>Perfil</span>
+                        </button>
                       )}
-                    </button>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenPhotoModal(photo, filteredPhotos);
+                        }}
+                        className="grid-photo-action-btn"
+                      >
+                        {purchased ? (
+                          <>
+                            <Download size={13} />
+                            <span>Baixar</span>
+                          </>
+                        ) : (
+                          <>
+                            <ShoppingBag size={13} />
+                            <span>Comprar</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </InteractiveStage>
@@ -1056,6 +1085,24 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
           isOpen={isEditRegistrationOpen}
           onClose={() => setIsEditRegistrationOpen(false)}
           onSave={handleSaveRegistration}
+        />
+      )}
+
+      {isSelectAvatarModalOpen && (
+        <SelectAvatarFromGalleryModal
+          currentUser={user}
+          photos={userPhotos}
+          isOpen={isSelectAvatarModalOpen}
+          onClose={() => setIsSelectAvatarModalOpen(false)}
+          onSelectAvatar={(newAvatarUrl) => {
+            if (onUpdateAvatar) {
+              onUpdateAvatar(newAvatarUrl);
+            }
+            setToastMessage('✨ Foto de perfil atualizada a partir da sua galeria!');
+            setCopiedToast(true);
+            setTimeout(() => setCopiedToast(false), 3500);
+          }}
+          onNavigateToFeed={onLockSession}
         />
       )}
 
