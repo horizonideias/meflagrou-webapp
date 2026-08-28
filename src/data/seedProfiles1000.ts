@@ -146,7 +146,7 @@ export function generate1000AIProfiles(): UserProfile[] {
       topFriends: [
         {
           userId: 'user_founder',
-          name: 'Deus • Meflagrou',
+          name: 'Meflagrou Oficial',
           handle: 'meflagrou',
           avatar: '/founder_avatar.jpg',
           sharedPhotosCount: 4 + (i % 12)

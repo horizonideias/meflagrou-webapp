@@ -30,7 +30,7 @@ const PINNED_TOP_3_STORIES: StoryItem[] = [
   {
     id: 'story_rank_1_deus',
     authorId: 'user_founder',
-    authorName: 'Deus • Meflagrou',
+    authorName: 'Meflagrou Oficial',
     authorHandle: 'meflagrou',
     authorAvatar: '/founder_avatar.jpg',
     authorType: 'founder',

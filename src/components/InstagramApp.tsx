@@ -51,8 +51,14 @@ export const InstagramApp: React.FC = () => {
       const saved = localStorage.getItem('meflagrou_registered_users');
       if (saved) {
         const customUsers: UserProfile[] = JSON.parse(saved);
-        const existingIds = new Set(customUsers.map((u) => u.id));
-        return [...customUsers, ...MOCK_USERS.filter((u) => !existingIds.has(u.id))];
+        const cleaned = customUsers.map((u) => {
+          if (u.name && (u.name.includes('Deus') || u.name === 'Deus • Meflagrou')) {
+            return { ...u, name: u.name.replace(/Deus\s*[•\-–]?\s*/gi, '').trim() || 'Meflagrou Oficial' };
+          }
+          return u;
+        });
+        const existingIds = new Set(cleaned.map((u) => u.id));
+        return [...cleaned, ...MOCK_USERS.filter((u) => !existingIds.has(u.id))];
       }
     } catch {
       // fallback
@@ -79,6 +85,14 @@ export const InstagramApp: React.FC = () => {
       if (session) {
         const parsed = JSON.parse(session);
         if (parsed && typeof parsed === 'object' && parsed.id && parsed.name) {
+          if (parsed.name && (parsed.name.includes('Deus') || parsed.name === 'Deus • Meflagrou')) {
+            parsed.name = parsed.name.replace(/Deus\s*[•\-–]?\s*/gi, '').trim() || 'Meflagrou Oficial';
+            try {
+              localStorage.setItem('meflagrou_active_session', JSON.stringify(parsed));
+            } catch {
+              // fallback
+            }
+          }
           if (parsed.city && parsed.city.includes(',')) {
             const parts = parsed.city.split(',').map((s: string) => s.trim()).filter(Boolean);
             parsed.city = parts[0];

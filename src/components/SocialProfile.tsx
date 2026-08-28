@@ -379,7 +379,7 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
                   </strong>
                 </div>
                 <span className="wallet-lbl">
-                  {isDeusProfile ? 'Conta DEUS (9%) PIX →' : 'Ganhos PIX →'}
+                  {isDeusProfile ? 'Conta Master (9%) PIX →' : 'Ganhos PIX →'}
                 </span>
               </div>
             </div>

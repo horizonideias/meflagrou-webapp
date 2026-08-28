@@ -4,7 +4,7 @@ import { SEED_PROFILES_1000 } from './seedProfiles1000';
 const BASE_USERS: UserProfile[] = [
   {
     id: 'user_founder',
-    name: 'Deus • Meflagrou',
+    name: 'Meflagrou Oficial',
     handle: 'meflagrou',
     avatar: '/founder_avatar.jpg',
     bio: 'Fundador & Criador Oficial do ecossistema meflagrou.com 📸🔥 • Conectando fotografia de balada, biometria facial e monetização 2x.',
@@ -74,7 +74,7 @@ const BASE_USERS: UserProfile[] = [
     topFriends: [
       {
         userId: 'user_founder',
-        name: 'Deus • Meflagrou',
+        name: 'Meflagrou Oficial',
         handle: 'meflagrou',
         avatar: '/founder_avatar.jpg',
         sharedPhotosCount: 8,
@@ -241,7 +241,7 @@ const BASE_USERS: UserProfile[] = [
     eventsCount: 7,
     attendedEvents: ['Tomorrowland Brasil - Mainstage', 'Sunset Festival 2026', 'Warung Beach Club'],
     topFriends: [
-      { userId: 'user_founder', name: 'Deus • Meflagrou', handle: 'meflagrou', avatar: '/founder_avatar.jpg', sharedPhotosCount: 9 },
+      { userId: 'user_founder', name: 'Meflagrou Oficial', handle: 'meflagrou', avatar: '/founder_avatar.jpg', sharedPhotosCount: 9 },
       { userId: 'user_valentina_rossi', name: 'Valentina Rossi', handle: 'valen_rossi', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80', sharedPhotosCount: 7 }
     ],
     socialLinks: { instagram: 'sophia.vibe', tiktok: 'sophia_dj' },
@@ -262,7 +262,7 @@ const BASE_USERS: UserProfile[] = [
     eventsCount: 6,
     attendedEvents: ['Ultra Brasil 2026', 'Privilège Club Neon Night', 'Baile do Copa Lux'],
     topFriends: [
-      { userId: 'user_founder', name: 'Deus • Meflagrou', handle: 'meflagrou', avatar: '/founder_avatar.jpg', sharedPhotosCount: 11 }
+      { userId: 'user_founder', name: 'Meflagrou Oficial', handle: 'meflagrou', avatar: '/founder_avatar.jpg', sharedPhotosCount: 11 }
     ],
     socialLinks: { instagram: 'gabriel.alencar', tiktok: 'gabriel_nightlife' },
     privacySettings: { isPublic: true, allowTagging: true, notifyOnNewPhoto: true }
@@ -292,7 +292,7 @@ const BASE_USERS: UserProfile[] = [
     name: 'Thiago Sampaio',
     handle: 'thiago.lens',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
-    bio: 'Fotógrafo profissional e caçador de ângulos épicos nas pistas. DEUS é referência máxima! 👑⚡',
+    bio: 'Fotógrafo profissional e caçador de ângulos épicos nas pistas. meflagrou é referência máxima! 👑⚡',
     city: 'Florianópolis',
     state: 'SC',
     verifiedAt: '2026-02-10',
@@ -302,7 +302,7 @@ const BASE_USERS: UserProfile[] = [
     eventsCount: 8,
     attendedEvents: ['Tomorrowland Brasil - Mainstage', 'Sunset Festival 2026', 'Techno Bunker Underground'],
     topFriends: [
-      { userId: 'user_founder', name: 'Deus • Meflagrou', handle: 'meflagrou', avatar: '/founder_avatar.jpg', sharedPhotosCount: 15 }
+      { userId: 'user_founder', name: 'Meflagrou Oficial', handle: 'meflagrou', avatar: '/founder_avatar.jpg', sharedPhotosCount: 15 }
     ],
     socialLinks: { instagram: 'thiago.lens', tiktok: 'thiagophoto' },
     privacySettings: { isPublic: true, allowTagging: true, notifyOnNewPhoto: true }
@@ -322,7 +322,7 @@ const BASE_USERS: UserProfile[] = [
     eventsCount: 4,
     attendedEvents: ['Techno Bunker Underground', 'Sunset Festival 2026', 'Privilège Club Neon Night'],
     topFriends: [
-      { userId: 'user_founder', name: 'Deus • Meflagrou', handle: 'meflagrou', avatar: '/founder_avatar.jpg', sharedPhotosCount: 8 }
+      { userId: 'user_founder', name: 'Meflagrou Oficial', handle: 'meflagrou', avatar: '/founder_avatar.jpg', sharedPhotosCount: 8 }
     ],
     socialLinks: { instagram: 'biaclubber', tiktok: 'bialimavibe' },
     privacySettings: { isPublic: true, allowTagging: true, notifyOnNewPhoto: true }
@@ -342,7 +342,7 @@ const BASE_USERS: UserProfile[] = [
     eventsCount: 6,
     attendedEvents: ['Sunset Festival 2026', 'Ultra Brasil 2026', 'Tomorrowland Brasil - Mainstage'],
     topFriends: [
-      { userId: 'user_founder', name: 'Deus • Meflagrou', handle: 'meflagrou', avatar: '/founder_avatar.jpg', sharedPhotosCount: 10 }
+      { userId: 'user_founder', name: 'Meflagrou Oficial', handle: 'meflagrou', avatar: '/founder_avatar.jpg', sharedPhotosCount: 10 }
     ],
     socialLinks: { instagram: 'dj_knox', tiktok: 'knoxmusic' },
     privacySettings: { isPublic: true, allowTagging: true, notifyOnNewPhoto: true }
@@ -440,7 +440,7 @@ export const MOCK_PHOTOS: EventPhoto[] = [
       {
         id: 'tag_founder_01_1',
         userId: 'user_founder',
-        userName: 'Deus • Meflagrou',
+        userName: 'Meflagrou Oficial',
         userHandle: 'meflagrou',
         userAvatar: '/founder_avatar.jpg',
         confidence: 99.8,
@@ -458,7 +458,7 @@ export const MOCK_PHOTOS: EventPhoto[] = [
     tradingData: {
       generation: 2,
       currentOwnerId: 'user_founder',
-      currentOwnerName: 'Deus • Meflagrou',
+      currentOwnerName: 'Meflagrou Oficial',
       currentOwnerHandle: 'meflagrou',
       currentOwnerAvatar: '/founder_avatar.jpg',
       boughtAtPrice: 14.90,
@@ -505,7 +505,7 @@ export const MOCK_PHOTOS: EventPhoto[] = [
       {
         id: 'tag_founder_02_1',
         userId: 'user_founder',
-        userName: 'Deus • Meflagrou',
+        userName: 'Meflagrou Oficial',
         userHandle: 'meflagrou',
         userAvatar: '/founder_avatar.jpg',
         confidence: 99.4,
@@ -532,7 +532,7 @@ export const MOCK_PHOTOS: EventPhoto[] = [
     tradingData: {
       generation: 3,
       currentOwnerId: 'user_founder',
-      currentOwnerName: 'Deus • Meflagrou',
+      currentOwnerName: 'Meflagrou Oficial',
       currentOwnerHandle: 'meflagrou',
       currentOwnerAvatar: '/founder_avatar.jpg',
       boughtAtPrice: 29.80,
@@ -1145,7 +1145,7 @@ export const MOCK_PHOTOS: EventPhoto[] = [
       {
         id: 'tag_deck_01_1',
         userId: 'user_founder',
-        userName: 'Deus • Meflagrou',
+        userName: 'Meflagrou Oficial',
         userHandle: 'meflagrou',
         userAvatar: '/founder_avatar.jpg',
         confidence: 99.9,
@@ -1561,7 +1561,7 @@ export const MOCK_PHOTOS: EventPhoto[] = [
       {
         id: 'tag_deck_11_1',
         userId: 'user_founder',
-        userName: 'Deus • Meflagrou',
+        userName: 'Meflagrou Oficial',
         userHandle: 'meflagrou',
         userAvatar: '/founder_avatar.jpg',
         confidence: 99.8,
@@ -1686,7 +1686,7 @@ export const MOCK_PHOTOS: EventPhoto[] = [
       {
         id: 'tag_deck_14_1',
         userId: 'user_founder',
-        userName: 'Deus • Meflagrou',
+        userName: 'Meflagrou Oficial',
         userHandle: 'meflagrou',
         userAvatar: '/founder_avatar.jpg',
         confidence: 99.7,
@@ -1828,7 +1828,7 @@ export const MOCK_PHOTOS: EventPhoto[] = [
     thumbnailUrl: '/founder_avatar.jpg',
     highResUrl: '/founder_avatar.jpg',
     eventId: 'evt_sunset_2026',
-    eventName: 'Lounge Master DEUS // Meflagrou 8K VIP Celebration',
+    eventName: 'Lounge Master Oficial // Meflagrou 8K VIP Celebration',
     eventDate: '14 de Fevereiro, 2026',
     location: 'Área Presidencial meflagrou.com',
     city: 'Guarujá, SP',
@@ -1851,7 +1851,7 @@ export const MOCK_PHOTOS: EventPhoto[] = [
       {
         id: 'tag_deck_18_1',
         userId: 'user_founder',
-        userName: 'Deus • Meflagrou',
+        userName: 'Meflagrou Oficial',
         userHandle: 'meflagrou',
         userAvatar: '/founder_avatar.jpg',
         confidence: 100,
@@ -1867,3 +1867,4 @@ export const MOCK_PHOTOS: EventPhoto[] = [
     ownerPrice: 49.90,
   },
 ];
+

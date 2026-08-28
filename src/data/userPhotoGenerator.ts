@@ -161,7 +161,7 @@ export function generateUserSamplePhotos(user: UserProfile): EventPhoto[] {
         {
           id: `tag_${photoId}_founder`,
           userId: 'user_founder',
-          userName: 'Deus • Meflagrou',
+          userName: 'Meflagrou Oficial',
           userHandle: 'meflagrou',
           userAvatar: '/founder_avatar.jpg',
           confidence: 98.6,

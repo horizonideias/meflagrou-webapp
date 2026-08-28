@@ -56,10 +56,10 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const INITIAL_SELLER_PROFILE: SellerProfile = {
   id: 'seller_current',
-  name: 'Deus • Meflagrou',
+  name: 'Meflagrou Oficial',
   handle: 'meflagrou',
   avatar: '/founder_avatar.jpg',
-  pixKey: 'deus.meflagrou@gmail.com',
+  pixKey: 'contato.meflagrou@gmail.com',
   pixKeyType: 'email',
   totalEarnings: 12480.50,
   availableBalance: 4890.00,
@@ -545,7 +545,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           photoId: itemsToProcess[0]?.photo.id || 'photo',
           photoThumbnail: itemsToProcess[0]?.photo.thumbnailUrl || itemsToProcess[0]?.photo.url || '/founder_avatar.jpg',
           eventName: itemsToProcess[0]?.photo.eventName || 'Festival',
-          buyerName: `@${buyer.handle} comprou flagra (9% Royalty de Deus)`,
+          buyerName: `@${buyer.handle} comprou flagra (9% Royalty Master)`,
           amount: total,
           netAmount: netDeusRoyalty,
           type: 'deus_master_royalty' as const,

@@ -1,4 +1,4 @@
-// AI Human Engine - Simulação de Interação Social Automática Contínua
+﻿// AI Human Engine - Simulação de Interação Social Automática Contínua
 // meflagrou.com - Perfis de IA Humana com curtidas, comentários, votos em batalhas, criação de novos perfis e publicação de fotos a cada 10 min
 import { SEED_PROFILES_1000 } from '../data/seedProfiles1000';
 import { MOCK_PHOTOS, MOCK_USERS } from '../data/mockDatabase';
@@ -48,7 +48,7 @@ const PHOTO_COMMENTS = [
   'A iluminação dessa foto tá simplesmente surreal! 📸✨',
   'Que vibe incrível desse flagra, a pista tava pegando fogo! 🔥',
   'Look 10/10! Arrasou muito no camarote 👏',
-  'DEUS e a equipe do meflagrou nunca erram no clique!',
+  'A equipe do meflagrou nunca erram no clique!',
   'Essa energia é única, saudades desse dia! 😍',
   'O fotógrafo pegou o momento perfeito no ápice do drop! ⚡',
   'Parece capa de revista internacional, sensacional!',
@@ -67,7 +67,7 @@ const BATTLE_COMMENTS = [
 const COMMUNITY_POSTS = [
   'Alguém mais indo no Sunset Festival no próximo fim de semana? Bora fechar um squad no camarote! 🎟️✨',
   'Dica de ouro: o reconhecimento facial com pulseira NFC do meflagrou agilizou 100% minhas fotos ontem!',
-  'A nova premiação da Liga dos Fotógrafos tá sensacional, torcendo pelo DEUS bater o recorde esse mês 🏆',
+  'A nova premiação da Liga dos Fotógrafos tá sensacional, torcendo pela equipe bater o recorde esse mês 🏆',
   'Quem aí já testou o Passaporte VIP? Downloads ilimitados salvaram a cobertura inteira da minha turma! 👑',
   'A Batalha 1x1 tá viciante demais, já votei em mais de 20 rounds hoje haha 🔥'
 ];
@@ -227,7 +227,7 @@ class AIHumanService {
       totalPhotosCount: 4,
       eventsCount: 2,
       attendedEvents: ['Sunset Festival 2026'],
-      topFriends: [{ userId: 'user_founder', name: 'Deus • Meflagrou', handle: 'meflagrou', avatar: '/founder_avatar.jpg', sharedPhotosCount: 2 }],
+      topFriends: [{ userId: 'user_founder', name: 'Meflagrou Oficial', handle: 'meflagrou', avatar: '/founder_avatar.jpg', sharedPhotosCount: 2 }],
       socialLinks: { instagram: handle },
       privacySettings: { isPublic: true, allowTagging: true, notifyOnNewPhoto: true }
     };
@@ -294,7 +294,7 @@ class AIHumanService {
         {
           id: `tag_${photoId}_2`,
           userId: 'user_founder',
-          userName: 'Deus • Meflagrou',
+          userName: 'Meflagrou Oficial',
           userHandle: 'meflagrou',
           userAvatar: '/founder_avatar.jpg',
           confidence: 98.8,
@@ -312,7 +312,7 @@ class AIHumanService {
       tradingData: {
         generation: 1,
         currentOwnerId: 'user_founder',
-        currentOwnerName: 'Deus • Meflagrou',
+        currentOwnerName: 'Meflagrou Oficial',
         currentOwnerHandle: 'meflagrou',
         currentOwnerAvatar: '/founder_avatar.jpg',
         boughtAtPrice: 14.90,
@@ -432,3 +432,4 @@ class AIHumanService {
 }
 
 export const aiHumanEngine = new AIHumanService();
+
