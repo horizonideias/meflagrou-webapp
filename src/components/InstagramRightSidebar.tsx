@@ -175,7 +175,7 @@ export const InstagramRightSidebar: React.FC<InstagramRightSidebarProps> = ({
               <span className="right-user-handle">@{currentUser.handle}</span>
               {isFounder ? (
                 <span className="right-founder-badge">
-                  <Crown size={10} color="#07080c" /> DEUS
+                  <Crown size={10} color="#07080c" /> MASTER
                 </span>
               ) : (
                 <span className="right-vip-badge">VIP</span>
@@ -300,7 +300,7 @@ export const InstagramRightSidebar: React.FC<InstagramRightSidebarProps> = ({
                 className="battle-thumb"
               />
               <div className="battle-vote-overlay">
-                <span className="battle-label">{battlePhotoA.tags[0]?.userName || 'Deus VIP'}</span>
+                <span className="battle-label">{battlePhotoA.tags[0]?.userName || 'Meflagrou VIP'}</span>
                 {battleVote && <span className="battle-pct">{pctA}%</span>}
               </div>
             </div>

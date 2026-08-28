@@ -238,7 +238,7 @@ export const ProfileSwitcherModal: React.FC<ProfileSwitcherModalProps> = ({
                             borderRadius: 6,
                           }}
                         >
-                          DEUS
+                          MASTER
                         </span>
                       )}
                     </div>

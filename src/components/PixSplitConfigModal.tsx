@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { 
   X, 
   Crown, 
@@ -18,16 +18,16 @@ export const PixSplitConfigModal: React.FC<PixSplitConfigModalProps> = ({
   onClose,
 }) => {
   const [pixKeyType, setPixKeyType] = useState<'cpf' | 'cnpj' | 'email' | 'telefone' | 'aleatoria'>('email');
-  const [pixKeyValue, setPixKeyValue] = useState<string>('deus@meflagrou.com');
+  const [pixKeyValue, setPixKeyValue] = useState<string>('contato@meflagrou.com');
   const [bankName, setBankName] = useState<string>('Banco Inter / Nubank / Itaú');
-  const [holderName, setHolderName] = useState<string>('DEUS - FUNDADOR & MASTER');
+  const [holderName, setHolderName] = useState<string>('MEFLAGROU OFICIAL - MASTER');
   const [isSaved, setIsSaved] = useState<boolean>(false);
   const [simulatedTransactions, setSimulatedTransactions] = useState<{
     id: string;
     photoTitle: string;
     total: number;
     ownerSplit: number;
-    deusSplit: number;
+    masterSplit: number;
     siteFee: number;
     time: string;
   }[]>([
@@ -36,7 +36,7 @@ export const PixSplitConfigModal: React.FC<PixSplitConfigModalProps> = ({
       photoTitle: 'Sunset Festival • VIP Mainstage',
       total: 999.99,
       ownerSplit: 899.99,
-      deusSplit: 89.99,
+      masterSplit: 89.99,
       siteFee: 10.00,
       time: 'Há 2 min'
     },
@@ -45,7 +45,7 @@ export const PixSplitConfigModal: React.FC<PixSplitConfigModalProps> = ({
       photoTitle: 'Warung Beach Club • Frontstage',
       total: 999.99,
       ownerSplit: 899.99,
-      deusSplit: 89.99,
+      masterSplit: 89.99,
       siteFee: 10.00,
       time: 'Há 8 min'
     },
@@ -54,7 +54,7 @@ export const PixSplitConfigModal: React.FC<PixSplitConfigModalProps> = ({
       photoTitle: 'Laroc Club • Sunset Glow',
       total: 999.99,
       ownerSplit: 899.99,
-      deusSplit: 89.99,
+      masterSplit: 89.99,
       siteFee: 10.00,
       time: 'Há 15 min'
     }
@@ -80,7 +80,7 @@ export const PixSplitConfigModal: React.FC<PixSplitConfigModalProps> = ({
       photoTitle: 'Tomorrowland Brasil • VIP Lounge',
       total: 999.99,
       ownerSplit: 899.99,
-      deusSplit: 89.99,
+      masterSplit: 89.99,
       siteFee: 10.00,
       time: 'Agora'
     };
@@ -138,7 +138,7 @@ export const PixSplitConfigModal: React.FC<PixSplitConfigModalProps> = ({
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#ffffff', margin: 0 }}>
-                Split Automático PIX // Conta de DEUS (9%)
+                Split Automático PIX // Conta Master (9%)
               </h2>
               <span style={{
                 background: 'rgba(255, 183, 3, 0.2)',
@@ -153,7 +153,7 @@ export const PixSplitConfigModal: React.FC<PixSplitConfigModalProps> = ({
               </span>
             </div>
             <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: 2, marginBottom: 0 }}>
-              Regra Oficial: 90% para o Dono da Foto • 9% para a Conta de DEUS • 1% para a plataforma meflagrou.com.
+              Regra Oficial: 90% para o Dono da Foto • 9% para a Conta Master • 1% para a plataforma meflagrou.com.
             </p>
           </div>
         </div>
@@ -180,7 +180,7 @@ export const PixSplitConfigModal: React.FC<PixSplitConfigModalProps> = ({
             </div>
 
             <div style={{ background: 'rgba(255, 183, 3, 0.15)', border: '1px solid #ffb703', borderRadius: 12, padding: 10 }}>
-              <span style={{ fontSize: '0.7rem', color: '#ffb703', fontWeight: 800 }}>👑 9% Conta de DEUS</span>
+              <span style={{ fontSize: '0.7rem', color: '#ffb703', fontWeight: 800 }}>👑 9% Conta Master</span>
               <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#ffb703' }}>
                 R$ 89,99
               </div>
@@ -200,7 +200,7 @@ export const PixSplitConfigModal: React.FC<PixSplitConfigModalProps> = ({
         {/* Chave PIX Configuration Form */}
         <form onSubmit={handleSavePix} style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 }}>
           <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#ffffff' }}>
-            Configurar Chave PIX de Destino de DEUS:
+            Configurar Chave PIX de Destino Master:
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 }}>
@@ -228,7 +228,7 @@ export const PixSplitConfigModal: React.FC<PixSplitConfigModalProps> = ({
 
           <div>
             <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
-              Chave PIX de DEUS
+              Chave PIX Master
             </label>
             <input
               type="text"
@@ -305,7 +305,7 @@ export const PixSplitConfigModal: React.FC<PixSplitConfigModalProps> = ({
             }}
           >
             <Check size={16} />
-            {isSaved ? 'Chave PIX de DEUS Atualizada!' : 'Salvar Chave PIX de DEUS'}
+            {isSaved ? 'Chave PIX Master Atualizada!' : 'Salvar Chave PIX Master'}
           </button>
         </form>
 
@@ -350,7 +350,7 @@ export const PixSplitConfigModal: React.FC<PixSplitConfigModalProps> = ({
 
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontWeight: 900, color: '#ffb703', fontSize: '0.88rem' }}>
-                    + R$ {tx.deusSplit.toFixed(2).replace('.', ',')} (9%)
+                    + R$ {tx.masterSplit.toFixed(2).replace('.', ',')} (9%)
                   </div>
                   <div style={{ fontSize: '0.65rem', color: 'var(--accent-teal)' }}>
                     Autor: R$ {tx.ownerSplit.toFixed(2)}
@@ -364,3 +364,4 @@ export const PixSplitConfigModal: React.FC<PixSplitConfigModalProps> = ({
     </div>
   );
 };
+

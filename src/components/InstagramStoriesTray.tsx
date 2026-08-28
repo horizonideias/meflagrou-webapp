@@ -26,7 +26,7 @@ export const InstagramStoriesTray: React.FC<InstagramStoriesTrayProps> = ({
     authorHandle: currentUser.handle,
     authorAvatar: currentUser.avatar,
     authorType: currentUser.id === 'user_founder' ? 'founder' : 'client',
-    badge: currentUser.id === 'user_founder' ? '👑 DEUS Master' : 'VIP Member',
+    badge: currentUser.id === 'user_founder' ? '👑 Master Oficial' : 'VIP Member',
     isDeus: currentUser.id === 'user_founder',
     slides: [],
   };

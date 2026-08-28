@@ -52,8 +52,8 @@ export const FlagraBattleModal: React.FC<FlagraBattleModalProps> = ({
   const [comments, setComments] = useState<BattleComment[]>([
     {
       id: 'c1',
-      userName: 'DEUS',
-      userHandle: '@deus_founder',
+      userName: 'Meflagrou Oficial',
+      userHandle: '@meflagrou',
       userAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
       text: 'A iluminação da Foto A tá em outro patamar! 🔥',
       timestamp: 'há 2 min',

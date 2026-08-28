@@ -85,7 +85,7 @@ export const FacialScannerModal: React.FC<FacialScannerModalProps> = ({
 
   // Search & Filter Bar States
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [activeFilterChip, setActiveFilterChip] = useState<'todos' | 'deus' | 'curtidos' | 'festivais' | 'sp' | 'rio'>('todos');
+  const [activeFilterChip, setActiveFilterChip] = useState<'todos' | 'master' | 'curtidos' | 'festivais' | 'sp' | 'rio'>('todos');
 
   // Stories Modal State
   const [activeStory, setActiveStory] = useState<StoryItem | null>(null);
@@ -177,7 +177,7 @@ export const FacialScannerModal: React.FC<FacialScannerModalProps> = ({
 
   // Filtered photos based on Google-style Search and Filter Chips
   const displayedPhotos = trendingPhotos.filter((p) => {
-    if (activeFilterChip === 'deus' && !p.tags.some(t => t.userName.toLowerCase().includes('deus'))) return false;
+    if (activeFilterChip === 'master' && !p.tags.some(t => t.userId === 'user_founder' || t.userName.toLowerCase().includes('meflagrou'))) return false;
     if (activeFilterChip === 'curtidos' && p.likesCount < 100) return false;
     if (activeFilterChip === 'festivais' && !p.eventName.toLowerCase().includes('tomorrowland') && !p.eventName.toLowerCase().includes('festival') && !p.eventName.toLowerCase().includes('vintage')) return false;
     if (activeFilterChip === 'sp' && !p.city.toLowerCase().includes('são paulo') && !p.city.toLowerCase().includes('valinhos') && !p.city.toLowerCase().includes('sorocaba')) return false;
@@ -1106,7 +1106,7 @@ export const FacialScannerModal: React.FC<FacialScannerModalProps> = ({
                       textOverflow: 'ellipsis',
                       lineHeight: 1.2
                     }}>
-                      {isRank1 ? '👑 DEUS' : story.authorName.split(' ')[0]}
+                      {isRank1 ? '👑 MASTER' : story.authorName.split(' ')[0]}
                     </div>
                     <div style={{
                       fontSize: '0.62rem',
@@ -1657,7 +1657,7 @@ export const FacialScannerModal: React.FC<FacialScannerModalProps> = ({
       >
         {[
           { id: 'todos', label: '⚡ Todos os Flagras' },
-          { id: 'deus', label: '👑 Acervo de Deus' },
+          { id: 'master', label: '👑 Acervo Master' },
           { id: 'curtidos', label: '🔥 Mais Votados' },
           { id: 'festivais', label: '🎪 Grandes Festivais' },
           { id: 'sp', label: '📍 São Paulo / Clubs' },
@@ -1774,7 +1774,7 @@ export const FacialScannerModal: React.FC<FacialScannerModalProps> = ({
                 justifyContent: 'space-between',
                 alignItems: 'center'
               }}>
-                <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#ffffff' }}>@{MOCK_PHOTOS[0].tags[0]?.userHandle || 'deus'}</span>
+                <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#ffffff' }}>@{MOCK_PHOTOS[0].tags[0]?.userHandle || 'meflagrou'}</span>
                 <span style={{ fontSize: '0.68rem', color: 'var(--accent-teal)', fontWeight: 800 }}>🗳️ 54% Votos</span>
               </div>
             </div>

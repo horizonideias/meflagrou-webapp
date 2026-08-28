@@ -126,7 +126,7 @@ export const PhotoModalViewer: React.FC<PhotoModalViewerProps> = ({
     },
     {
       id: 'c2',
-      userName: 'Deus • Meflagrou',
+      userName: 'Meflagrou Oficial',
       userAvatar: '/founder_avatar.jpg',
       text: 'Cobertura oficial 8K Ultra HD sem compressão 👑📸',
       timestamp: 'há 25 min',

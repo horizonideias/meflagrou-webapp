@@ -162,7 +162,7 @@ export const CommunityLiveChatModal: React.FC<CommunityLiveChatModalProps> = ({
     {
       id: 'm4',
       senderId: 'user_founder',
-      senderName: 'Deus • Meflagrou',
+      senderName: 'Meflagrou Oficial',
       senderHandle: 'meflagrou',
       senderAvatar: '/founder_avatar.jpg',
       isFounder: true,

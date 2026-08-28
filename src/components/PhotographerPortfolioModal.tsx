@@ -329,7 +329,7 @@ export const PhotographerPortfolioModal: React.FC<PhotographerPortfolioModalProp
                   <input
                     type="text"
                     placeholder="Ex: @seunome ou VIP"
-                    defaultValue="DEUS_FOUNDER"
+                    defaultValue="MEFLAGROU_VIP"
                     style={{
                       width: '100%',
                       background: 'rgba(0, 245, 212, 0.08)',

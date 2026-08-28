@@ -584,49 +584,47 @@ export const PhotographerSalesDashboard: React.FC = () => {
                     <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700 }}>10% do total</div>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Master Hub de Deus Breakdown Card (90% / 9% / 1%) */}
-            <div style={{
-              background: 'linear-gradient(135deg, rgba(255, 183, 3, 0.15), rgba(121, 40, 202, 0.15))',
-              border: '1.5px solid rgba(255, 183, 3, 0.4)',
-              borderRadius: 16,
-              padding: 18
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <Crown size={20} color="#ffb703" />
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#ffffff' }}>
-                  Regra Master de Curadoria Oficial de DEUS (R$ 999,99)
-                </h3>
-              </div>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: 14 }}>
-                Todas as fotos postadas no site são automaticamente catalogadas no <strong>Perfil Oficial de Deus</strong> com valor padrão de <strong>R$ 999,99</strong> e a seguinte divisão de repasse:
-              </p>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-                <div style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(0, 245, 212, 0.3)', borderRadius: 12, padding: 12, textAlign: 'center' }}>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--accent-teal)', fontWeight: 700 }}>90% Dono Oficial da Foto</span>
-                  <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 900, color: '#ffffff', marginTop: 4 }}>
-                    R$ 899,99
+                {/* Master Hub Breakdown Card (90% / 9% / 1%) */}
+                <div style={{
+                  background: 'rgba(255, 183, 3, 0.05)',
+                  border: '1px solid rgba(255, 183, 3, 0.3)',
+                  borderRadius: 16,
+                  padding: 16,
+                  marginTop: 16,
+                  marginBottom: 16
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                    <Crown size={16} color="#ffb703" />
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#ffffff' }}>
+                      Regra Master de Curadoria Oficial Meflagrou (R$ 999,99)
+                    </h3>
                   </div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: 2 }}>Quem capturou / postou</div>
-                </div>
-
-                <div style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255, 183, 3, 0.4)', borderRadius: 12, padding: 12, textAlign: 'center' }}>
-                  <span style={{ fontSize: '0.72rem', color: '#ffb703', fontWeight: 700 }}>9% Conta de DEUS</span>
-                  <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 900, color: '#ffb703', marginTop: 4 }}>
-                    R$ 90,00
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: 14 }}>
+                    Todas as fotos postadas no site são automaticamente catalogadas no <strong>Perfil Oficial Master</strong> com valor padrão de <strong>R$ 999,99</strong> e a seguinte divisão de repasse:
+                  </p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 8 }}>
+                    <div style={{ background: 'rgba(0,0,0,0.4)', borderRadius: 12, padding: 12, textAlign: 'center' }}>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>90% Autor/Fotógrafo</span>
+                      <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 900, color: 'var(--accent-teal)', marginTop: 4 }}>
+                        R$ 899,99
+                      </div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: 2 }}>Quem postou</div>
+                    </div>
+                    <div style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255, 183, 3, 0.4)', borderRadius: 12, padding: 12, textAlign: 'center' }}>
+                      <span style={{ fontSize: '0.72rem', color: '#ffb703', fontWeight: 700 }}>9% Conta Master</span>
+                      <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 900, color: '#ffb703', marginTop: 4 }}>
+                        R$ 89,99
+                      </div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: 2 }}>Royalty Master</div>
+                    </div>
+                    <div style={{ background: 'rgba(0,0,0,0.4)', borderRadius: 12, padding: 12, textAlign: 'center' }}>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>1% Plataforma</span>
+                      <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 900, color: '#ffffff', marginTop: 4 }}>
+                        R$ 10,00
+                      </div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: 2 }}>Infraestrutura & PIX</div>
+                    </div>
                   </div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: 2 }}>Royalty de Curadoria Master</div>
-                </div>
-
-                <div style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid var(--border-subtle)', borderRadius: 12, padding: 12, textAlign: 'center' }}>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 700 }}>1% Site meflagrou.com</span>
-                  <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 900, color: '#ffffff', marginTop: 4 }}>
-                    R$ 10,00
-                  </div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: 2 }}>Infraestrutura & Gateway PIX</div>
                 </div>
               </div>
             </div>

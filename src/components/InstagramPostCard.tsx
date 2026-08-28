@@ -89,7 +89,7 @@ export const InstagramPostCard: React.FC<InstagramPostCardProps> = ({
   // Sale info & cart status
   const photoPrice = currentSlidePhoto.ownerPrice || 19.90;
   const isPurchased = cart.some((item) => item.photo.id === currentSlidePhoto.id);
-  const isFounderProfile = photo.photographer.name.includes('Deus') || photo.photographer.name.includes('Founder');
+  const isFounderProfile = photo.photographer.name.includes('Meflagrou') || photo.photographer.name.includes('Founder');
 
   // Tag do autor
   const authorTag = photo.tags && photo.tags[0];

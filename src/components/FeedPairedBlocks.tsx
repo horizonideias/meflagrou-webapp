@@ -395,7 +395,7 @@ export const FeedPairedBlocks: React.FC<FeedPairedBlocksProps> = ({
         <div className="square-img-wrapper">
           <img 
             src="/founder_avatar.jpg" 
-            alt="Founder DEUS" 
+            alt="Founder Master" 
             className="square-img-fill"
           />
           <div className="square-gradient-overlay" />
@@ -403,7 +403,7 @@ export const FeedPairedBlocks: React.FC<FeedPairedBlocksProps> = ({
 
         <div className="square-badge-top">
           <Crown size={11} color="#ffb703" />
-          <span>DEUS • MEFLAGROU</span>
+          <span>MEFLAGROU OFICIAL</span>
         </div>
 
         <div className="square-bottom-content">

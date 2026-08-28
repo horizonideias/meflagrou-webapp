@@ -454,7 +454,7 @@ export const InstagramFeed: React.FC<InstagramFeedProps> = ({
                 <div className="flagrante-feed-avatar-wrap">
                   <img src={user.avatar} alt={user.name} className="flagrante-feed-avatar-img" />
                   {user.id === 'user_founder' ? (
-                    <div className="flagrante-founder-badge" title="DEUS • Fundador">
+                    <div className="flagrante-founder-badge" title="Fundador Oficial • Meflagrou">
                       <Crown size={11} color="#07080c" />
                     </div>
                   ) : (

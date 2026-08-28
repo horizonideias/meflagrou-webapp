@@ -264,7 +264,7 @@ const CATEGORIES: CategoryCardData[] = [
     {
       id: 'cat_vault',
       title: 'Master Vault',
-      badge: 'Exclusivo DEUS',
+      badge: 'Exclusivo Master',
       icon: <Sparkles size={12} color="#ffb703" />,
       filterKey: 'vip',
       photos: [

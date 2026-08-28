@@ -523,7 +523,7 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
               }}
             >
               <Sparkles size={15} />
-              <span>{currentStory.isDeus ? 'Acessar Acervo de Deus' : 'Ver Perfil & Flagras'}</span>
+              <span>{currentStory.isDeus ? 'Acessar Acervo Master' : 'Ver Perfil & Flagras'}</span>
               <ArrowRight size={14} />
             </button>
           </div>

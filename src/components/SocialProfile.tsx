@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { 
   ShieldCheck, 
   MapPin, 
@@ -83,7 +83,7 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
 
   const { triggerInstall } = usePwaInstall();
   const isOwnProfile = currentUser ? currentUser.id === user.id : true;
-  const isDeusProfile = user.id === 'user_founder';
+  const isFounderProfile = user.id === 'user_founder';
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const [selectedEventId, setSelectedEventId] = useState<string>('all');
   const [selectedSquadFriendId, setSelectedSquadFriendId] = useState<string | null>(null);
@@ -120,7 +120,7 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
 
   // Aggregate photos for this profile from all persistent stores
   const savedUserPhotos = getUserSavedPhotos(user.id);
-  const existingPhotos = isDeusProfile
+  const existingPhotos = isFounderProfile
     ? Array.from(new Map([...clientPublishedPhotos, ...savedUserPhotos, ...MOCK_PHOTOS].map((p) => [p.id, p])).values())
     : Array.from(
         new Map(
@@ -133,7 +133,7 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
       );
 
   const samplePhotos = generateUserSamplePhotos(user);
-  const userPhotos = isDeusProfile 
+  const userPhotos = isFounderProfile 
     ? existingPhotos 
     : existingPhotos.length > 0 
     ? existingPhotos 
@@ -309,10 +309,10 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
               </button>
             )}
             <div 
-              className={`profile-hero-badge-corner ${isDeusProfile ? 'founder' : 'vip'}`}
+              className={`profile-hero-badge-corner ${isFounderProfile ? 'founder' : 'vip'}`}
               title="Identidade Biométrica 8K Validada"
             >
-              {isDeusProfile ? <Crown size={14} /> : <ShieldCheck size={14} />}
+              {isFounderProfile ? <Crown size={14} /> : <ShieldCheck size={14} />}
             </div>
           </div>
 
@@ -320,9 +320,9 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
           <div className="profile-hero-info-column">
             <div className="profile-hero-title-row">
               <h1 className="profile-hero-user-name">{user.name}</h1>
-              <span className={`profile-hero-tier-tag ${isDeusProfile ? 'founder' : 'vip'}`}>
+              <span className={`profile-hero-tier-tag ${isFounderProfile ? 'founder' : 'vip'}`}>
                 <Award size={12} />
-                {isDeusProfile ? 'FOUNDER MASTER' : 'VIP Diamond'}
+                {isFounderProfile ? 'FOUNDER MASTER' : 'VIP Diamond'}
               </span>
             </div>
 
@@ -355,7 +355,7 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
             <div className="profile-hero-stats-strip">
               <div className="hero-stat-box">
                 <strong className="stat-num">{userPhotos.length}</strong>
-                <span className="stat-lbl">{isDeusProfile ? 'Vault' : 'Flagras'}</span>
+                <span className="stat-lbl">{isFounderProfile ? 'Vault' : 'Flagras'}</span>
               </div>
               <div className="hero-stat-box stat-divider">
                 <strong className="stat-num text-cyan">{user.eventsCount}</strong>
@@ -373,13 +373,13 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
                 title="Ver extrato e solicitar saque via PIX"
               >
                 <div className="wallet-amount-row">
-                  <DollarSign size={13} color={isDeusProfile ? '#ffb703' : 'var(--accent-teal)'} />
+                  <DollarSign size={13} color={isFounderProfile ? '#ffb703' : 'var(--accent-teal)'} />
                   <strong className="wallet-num">
                     R$ {sellerProfile.availableBalance.toFixed(2).replace('.', ',')}
                   </strong>
                 </div>
                 <span className="wallet-lbl">
-                  {isDeusProfile ? 'Conta Master (9%) PIX →' : 'Ganhos PIX →'}
+                  {isFounderProfile ? 'Conta Master (9%) PIX →' : 'Ganhos PIX →'}
                 </span>
               </div>
             </div>
@@ -773,7 +773,7 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
             onClick={() => setSelectedFilter('all')}
             className={`gallery-filter-tab ${selectedFilter === 'all' ? 'active' : ''}`}
           >
-            {isDeusProfile ? `👑 Master Vault (${userPhotos.length})` : `Todos os Flagras (${userPhotos.length})`}
+            {isFounderProfile ? `👑 Master Vault (${userPhotos.length})` : `Todos os Flagras (${userPhotos.length})`}
           </button>
 
           <button
@@ -781,7 +781,7 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
             className={`gallery-filter-tab ${selectedFilter === 'shop' ? 'active' : ''}`}
           >
             <Store size={13} />
-            <span>{isDeusProfile ? 'À Venda' : 'Minha Loja'}</span>
+            <span>{isFounderProfile ? 'À Venda' : 'Minha Loja'}</span>
           </button>
 
           <button
@@ -1114,3 +1114,4 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
     </div>
   );
 };
+
