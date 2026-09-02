@@ -56,8 +56,6 @@ export const CommunityLiveChatModal: React.FC<CommunityLiveChatModalProps> = ({
   onSelectUser,
   onOpenPhoto,
 }) => {
-  if (!isOpen) return null;
-
   // Active Tab: 'channels' | 'direct'
   const [activeTab, setActiveTab] = useState<'channels' | 'direct'>('channels');
   
@@ -292,6 +290,8 @@ export const CommunityLiveChatModal: React.FC<CommunityLiveChatModalProps> = ({
       })
     );
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="modal-backdrop" style={{ zIndex: 99999, padding: '12px' }}>
