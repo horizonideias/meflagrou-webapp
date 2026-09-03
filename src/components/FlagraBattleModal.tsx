@@ -16,6 +16,7 @@ import confetti from 'canvas-confetti';
 import { soundFx } from '../services/biometricService';
 import { MOCK_PHOTOS, MOCK_USERS } from '../data/mockDatabase';
 import { aiHumanEngine } from '../services/aiHumanEngine';
+import { haptics } from '../utils/haptics';
 import type { EventPhoto, UserProfile } from '../types';
 
 interface BattleComment {
@@ -103,6 +104,7 @@ export const FlagraBattleModal: React.FC<FlagraBattleModalProps> = ({
 
     setVotedPhotoId(photoId);
     setStreakCount(s => s + 1);
+    haptics.vote();
 
     if (isA) {
       setVotesA(v => v + 1);

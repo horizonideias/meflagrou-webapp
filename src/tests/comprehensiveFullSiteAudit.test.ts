@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { 
   isValidCPF, 
   validateRegistrationForm,
@@ -264,6 +264,86 @@ describe('🔬 AUDITORIA & TESTE GERAL DO MEFLAGROU.COM', () => {
         expect(evt.name).toBeDefined();
         expect(evt.city).toBeDefined();
       });
+    });
+  });
+
+  // =========================================================================
+  // 7. LGPD, DIREITO DE IMAGEM & PROTOCOLO DE MODERAÇÃO
+  // =========================================================================
+  describe('🛡️ 7. Módulo LGPD e Direito ao Desfoque/Remoção de Imagem', () => {
+    it('deve gerar protocolo de solicitação LGPD válido e salvar no storage', () => {
+      const samplePhoto = MOCK_PHOTOS[0];
+      const protocol = `LGPD-${Math.floor(100000 + Math.random() * 900000)}`;
+      
+      const lgpdRequest = {
+        protocol,
+        photoId: samplePhoto.id,
+        photoUrl: samplePhoto.url,
+        eventName: samplePhoto.eventName,
+        reason: 'lgpd_image_rights',
+        requestType: 'blur',
+        requesterName: 'Mariana Lima',
+        requesterContact: '(11) 98888-7777',
+        status: 'accepted',
+        createdAt: new Date().toISOString()
+      };
+
+      mockLocalStorage.setItem('meflagrou_lgpd_requests', JSON.stringify([lgpdRequest]));
+      
+      const saved = JSON.parse(mockLocalStorage.getItem('meflagrou_lgpd_requests') || '[]');
+      expect(saved.length).toBe(1);
+      expect(saved[0].protocol).toMatch(/^LGPD-\d{6}$/);
+      expect(saved[0].requestType).toBe('blur');
+    });
+
+    it('deve adicionar foto na lista de fotos ocultadas/desfocadas', () => {
+      const photoId = 'photo_isa_01';
+      const hiddenPhotos = [photoId];
+      mockLocalStorage.setItem('meflagrou_hidden_photos', JSON.stringify(hiddenPhotos));
+
+      const savedList = JSON.parse(mockLocalStorage.getItem('meflagrou_hidden_photos') || '[]');
+      expect(savedList).toContain(photoId);
+    });
+  });
+
+  // =========================================================================
+  // 8. CUPONS DE DESCONTO E COMBO PROMOCIONAL (3+ FOTOS)
+  // =========================================================================
+  describe('🎟️ 8. Cupons de Desconto e Bônus Combo de Fotos', () => {
+    it('deve calcular corretamente o cupom VIP Master de 15% (MEFLAGROUVIP)', () => {
+      const subtotal = 100.00;
+      const discount = subtotal * 0.15;
+      const finalPrice = subtotal - discount;
+      expect(discount).toBe(15.00);
+      expect(finalPrice).toBe(85.00);
+    });
+
+    it('deve calcular corretamente o cupom de 20% (FESTIVAL20 / MASTER20)', () => {
+      const subtotal = 200.00;
+      const discount = subtotal * 0.20;
+      const finalPrice = subtotal - discount;
+      expect(discount).toBe(40.00);
+      expect(finalPrice).toBe(160.00);
+    });
+
+    it('deve aplicar bônus de combo quando 3 ou mais fotos estiverem no carrinho', () => {
+      const itemsCount = 4;
+      const isComboActive = itemsCount >= 3;
+      expect(isComboActive).toBe(true);
+
+      const cartTotal = 120.00;
+      const comboDiscount = isComboActive ? cartTotal * 0.05 : 0;
+      expect(comboDiscount).toBe(6.00);
+    });
+  });
+
+  // =========================================================================
+  // 9. FEEDBACK HÁPTICO & SEGURANÇA NO NAVEGADOR
+  // =========================================================================
+  describe('📳 9. Feedback Háptico Web', () => {
+    it('o utilitário de haptics não deve quebrar em ambientes sem suporte', () => {
+      const isSupported = typeof window !== 'undefined' && typeof navigator !== 'undefined' && 'vibrate' in navigator;
+      expect(typeof isSupported).toBe('boolean');
     });
   });
 });

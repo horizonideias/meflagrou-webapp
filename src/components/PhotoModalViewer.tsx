@@ -25,7 +25,8 @@ import {
   MessageCircle,
   UserPlus,
   Lock,
-  Camera
+  Camera,
+  ShieldAlert
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import type { EventPhoto, UserProfile } from '../types';
@@ -36,6 +37,8 @@ import { MotionVideoModal } from './MotionVideoModal';
 import { DirectSaleModal } from './DirectSaleModal';
 import { AuthenticityCertificateModal } from './AuthenticityCertificateModal';
 import { StoryShareModal } from './StoryShareModal';
+import { PhotoPrivacyRemovalModal } from './PhotoPrivacyRemovalModal';
+import { haptics } from '../utils/haptics';
 import { 
   FILM_PRESETS, 
   extractPhotoColorPalette, 
@@ -141,6 +144,7 @@ export const PhotoModalViewer: React.FC<PhotoModalViewerProps> = ({
   const [isMotionModalOpen, setIsMotionModalOpen] = useState<boolean>(false);
   const [isDirectSaleOpen, setIsDirectSaleOpen] = useState<boolean>(false);
   const [isCertificateModalOpen, setIsCertificateModalOpen] = useState<boolean>(false);
+  const [isPrivacyRemovalOpen, setIsPrivacyRemovalOpen] = useState<boolean>(false);
 
   const currentIndex = photosList.findIndex((p) => p.id === photo.id);
   const hasPrev = currentIndex > 0;
@@ -423,6 +427,20 @@ export const PhotoModalViewer: React.FC<PhotoModalViewerProps> = ({
               title="Atmosfera Sonora do Evento"
             >
               {isPlayingAudio ? <Volume2 size={18} color="var(--accent-teal)" /> : <VolumeX size={18} />}
+            </button>
+
+            {/* LGPD Privacy Removal Request */}
+            <button
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                haptics.lightTick();
+                setIsPrivacyRemovalOpen(true); 
+              }}
+              className="floating-icon-btn"
+              style={{ color: '#00f0ff' }}
+              title="Solicitar Desfoque Facial ou Remoção da Foto (LGPD)"
+            >
+              <ShieldAlert size={17} />
             </button>
 
             {/* Close Button */}
@@ -763,6 +781,18 @@ export const PhotoModalViewer: React.FC<PhotoModalViewerProps> = ({
           photo={photo}
           currentUser={currentUser}
           onClose={() => setIsCertificateModalOpen(false)}
+        />
+      )}
+
+      {isPrivacyRemovalOpen && (
+        <PhotoPrivacyRemovalModal
+          photo={photo}
+          isOpen={isPrivacyRemovalOpen}
+          onClose={() => setIsPrivacyRemovalOpen(false)}
+          onPhotoHidden={() => {
+            setIsPrivacyRemovalOpen(false);
+            onClose();
+          }}
         />
       )}
     </>

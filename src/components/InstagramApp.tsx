@@ -13,33 +13,35 @@ import { StoryShareModal } from './StoryShareModal';
 import { BottomMobileNav } from './BottomMobileNav';
 import { CartDrawer } from './CartDrawer';
 import { CheckoutModal } from './CheckoutModal';
-import { PhotographerSalesDashboard } from './PhotographerSalesDashboard';
-import { PartyRadarMapModal } from './PartyRadarMapModal';
-import { LeaderboardHallOfFameModal } from './LeaderboardHallOfFameModal';
-import { NotificationDrawer } from './NotificationDrawer';
-import { PhotoUploadDashboard } from './PhotoUploadDashboard';
-import { NewEnrollmentModal } from './NewEnrollmentModal';
-import { FeaturesHubMenuModal } from './FeaturesHubMenuModal';
-import { FlagraBattleModal } from './FlagraBattleModal';
-import { VipClubSubscriptionModal } from './VipClubSubscriptionModal';
-import { WhatsAppAlertModal } from './WhatsAppAlertModal';
-import { PhotographerLiveTetherModal } from './PhotographerLiveTetherModal';
-import { PhotographerAffiliateModal } from './PhotographerAffiliateModal';
-import { PhotographerPortfolioModal } from './PhotographerPortfolioModal';
-import { PhotographerCallPingModal } from './PhotographerCallPingModal';
-import { SquadMatchBundleModal } from './SquadMatchBundleModal';
-import { WristbandCheckInModal } from './WristbandCheckInModal';
-import { PhotographerLeagueRankingModal } from './PhotographerLeagueRankingModal';
-import { PrivacyVaultModal } from './PrivacyVaultModal';
-import { FacialScannerModal } from './FacialScannerModal';
-import { FestivalHeatmapModal } from './FestivalHeatmapModal';
-import { ReferralCashbackModal } from './ReferralCashbackModal';
-import { FlagrantesSearchModal } from './FlagrantesSearchModal';
-import { FullscreenPhotoSlideshowModal } from './FullscreenPhotoSlideshowModal';
 import { AntiScreenCaptureShield } from './AntiScreenCaptureShield';
 import { AuthGatekeeperPage } from './AuthGatekeeperPage';
-import { CommunityLiveChatModal } from './CommunityLiveChatModal';
+import { NotificationDrawer } from './NotificationDrawer';
 import { MeflagrouLogo } from './MeflagrouLogo';
+
+// Lazy Loaded Secondary Heavy Modals for Maximum LCP Performance
+const PhotographerSalesDashboard = React.lazy(() => import('./PhotographerSalesDashboard').then(m => ({ default: m.PhotographerSalesDashboard })));
+const PartyRadarMapModal = React.lazy(() => import('./PartyRadarMapModal').then(m => ({ default: m.PartyRadarMapModal })));
+const LeaderboardHallOfFameModal = React.lazy(() => import('./LeaderboardHallOfFameModal').then(m => ({ default: m.LeaderboardHallOfFameModal })));
+const PhotoUploadDashboard = React.lazy(() => import('./PhotoUploadDashboard').then(m => ({ default: m.PhotoUploadDashboard })));
+const NewEnrollmentModal = React.lazy(() => import('./NewEnrollmentModal').then(m => ({ default: m.NewEnrollmentModal })));
+const FeaturesHubMenuModal = React.lazy(() => import('./FeaturesHubMenuModal').then(m => ({ default: m.FeaturesHubMenuModal })));
+const FlagraBattleModal = React.lazy(() => import('./FlagraBattleModal').then(m => ({ default: m.FlagraBattleModal })));
+const VipClubSubscriptionModal = React.lazy(() => import('./VipClubSubscriptionModal').then(m => ({ default: m.VipClubSubscriptionModal })));
+const WhatsAppAlertModal = React.lazy(() => import('./WhatsAppAlertModal').then(m => ({ default: m.WhatsAppAlertModal })));
+const PhotographerLiveTetherModal = React.lazy(() => import('./PhotographerLiveTetherModal').then(m => ({ default: m.PhotographerLiveTetherModal })));
+const PhotographerAffiliateModal = React.lazy(() => import('./PhotographerAffiliateModal').then(m => ({ default: m.PhotographerAffiliateModal })));
+const PhotographerPortfolioModal = React.lazy(() => import('./PhotographerPortfolioModal').then(m => ({ default: m.PhotographerPortfolioModal })));
+const PhotographerCallPingModal = React.lazy(() => import('./PhotographerCallPingModal').then(m => ({ default: m.PhotographerCallPingModal })));
+const SquadMatchBundleModal = React.lazy(() => import('./SquadMatchBundleModal').then(m => ({ default: m.SquadMatchBundleModal })));
+const WristbandCheckInModal = React.lazy(() => import('./WristbandCheckInModal').then(m => ({ default: m.WristbandCheckInModal })));
+const PhotographerLeagueRankingModal = React.lazy(() => import('./PhotographerLeagueRankingModal').then(m => ({ default: m.PhotographerLeagueRankingModal })));
+const PrivacyVaultModal = React.lazy(() => import('./PrivacyVaultModal').then(m => ({ default: m.PrivacyVaultModal })));
+const FacialScannerModal = React.lazy(() => import('./FacialScannerModal').then(m => ({ default: m.FacialScannerModal })));
+const FestivalHeatmapModal = React.lazy(() => import('./FestivalHeatmapModal').then(m => ({ default: m.FestivalHeatmapModal })));
+const ReferralCashbackModal = React.lazy(() => import('./ReferralCashbackModal').then(m => ({ default: m.ReferralCashbackModal })));
+const FlagrantesSearchModal = React.lazy(() => import('./FlagrantesSearchModal').then(m => ({ default: m.FlagrantesSearchModal })));
+const FullscreenPhotoSlideshowModal = React.lazy(() => import('./FullscreenPhotoSlideshowModal').then(m => ({ default: m.FullscreenPhotoSlideshowModal })));
+const CommunityLiveChatModal = React.lazy(() => import('./CommunityLiveChatModal').then(m => ({ default: m.CommunityLiveChatModal })));
 import { useCart } from '../context/CartContext';
 import { dbService } from '../services/databaseService';
 import { Bell, ShoppingBag, Users, X, Check, Search, LogOut } from 'lucide-react';
@@ -496,8 +498,9 @@ export const InstagramApp: React.FC = () => {
       <CartDrawer />
       <CheckoutModal currentUser={currentUser} />
 
-      {/* Photographer Sales Dashboard */}
-      <PhotographerSalesDashboard />
+      <React.Suspense fallback={null}>
+        {/* Photographer Sales Dashboard */}
+        <PhotographerSalesDashboard />
 
       {/* Party Radar Map GPS */}
       {isRadarOpen && <PartyRadarMapModal onClose={() => setIsRadarOpen(false)} />}
@@ -738,6 +741,7 @@ export const InstagramApp: React.FC = () => {
           <span>{uploadSuccessToast}</span>
         </div>
       )}
+      </React.Suspense>
 
       {/* 🛡️ Digital Anti-Print & Screen Protection Shield */}
       <AntiScreenCaptureShield onOpenCart={openCart} />

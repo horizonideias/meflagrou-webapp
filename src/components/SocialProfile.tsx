@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   ShieldCheck, 
   MapPin, 
@@ -49,8 +49,10 @@ import { PhotographerLeagueRankingModal } from './PhotographerLeagueRankingModal
 import { FeaturesHubMenuModal } from './FeaturesHubMenuModal';
 import { EditProfileRegistrationModal } from './EditProfileRegistrationModal';
 import { SelectAvatarFromGalleryModal } from './SelectAvatarFromGalleryModal';
+import { TermsAndPrivacyModal } from './TermsAndPrivacyModal';
 import { MeflagrouLogo } from './MeflagrouLogo';
 import { maskCPF, formatWhatsAppPhone } from '../utils/securityUtils';
+import { haptics } from '../utils/haptics';
 
 interface SocialProfileProps {
   user: UserProfile;
@@ -108,6 +110,7 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
   const [isWristbandOpen, setIsWristbandOpen] = useState<boolean>(false);
   const [isLeagueOpen, setIsLeagueOpen] = useState<boolean>(false);
   const [isHubMenuOpen, setIsHubMenuOpen] = useState<boolean>(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState<boolean>(false);
 
   const handleSaveRegistration = (updatedUser: UserProfile) => {
     if (onUpdateProfile) {
@@ -945,6 +948,28 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
         </div>
       )}
 
+      {/* Footer Legal & LGPD */}
+      <div style={{ marginTop: 40, marginBottom: 24, textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 20 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 16, fontSize: '0.76rem' }}>
+          <button
+            onClick={() => { haptics.lightTick(); setIsTermsModalOpen(true); }}
+            style={{ background: 'none', border: 'none', color: 'var(--accent-cyan)', cursor: 'pointer', fontWeight: 700 }}
+          >
+            Termos de Uso & Split
+          </button>
+          <span style={{ color: 'var(--text-muted)' }}>•</span>
+          <button
+            onClick={() => { haptics.lightTick(); setIsTermsModalOpen(true); }}
+            style={{ background: 'none', border: 'none', color: 'var(--accent-teal)', cursor: 'pointer', fontWeight: 700 }}
+          >
+            Privacidade & LGPD
+          </button>
+        </div>
+        <p style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.35)', marginTop: 8 }}>
+          © 2026 meflagrou.com • Plataforma Inteligente de Curadoria Fotográfica 8K
+        </p>
+      </div>
+
       {/* Sub-modals */}
       {editingSalePhoto && (
         <DirectSaleModal
@@ -1103,6 +1128,13 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
             setTimeout(() => setCopiedToast(false), 3500);
           }}
           onNavigateToFeed={onLockSession}
+        />
+      )}
+
+      {isTermsModalOpen && (
+        <TermsAndPrivacyModal
+          isOpen={isTermsModalOpen}
+          onClose={() => setIsTermsModalOpen(false)}
         />
       )}
 

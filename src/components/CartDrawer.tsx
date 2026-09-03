@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
+import { haptics } from '../utils/haptics';
+
 export const CartDrawer: React.FC = () => {
   const { cart, isCartOpen, closeCart, removeFromCart, openCheckout, clearCart } = useCart();
   const [couponCode, setCouponCode] = useState<string>('');
@@ -21,8 +23,10 @@ export const CartDrawer: React.FC = () => {
 
   const rawSubtotal = cart.reduce((acc, item) => acc + item.originalPrice, 0);
   const currentTotal = cart.reduce((acc, item) => acc + item.price, 0);
-  const bundleDiscount = rawSubtotal - currentTotal;
-  const finalTotal = Math.max(0, currentTotal - couponDiscount);
+  const isComboActive = cart.length >= 3;
+  const comboDiscount = isComboActive ? currentTotal * 0.05 : 0;
+  const bundleDiscount = (rawSubtotal - currentTotal) + comboDiscount;
+  const finalTotal = Math.max(0, currentTotal - couponDiscount - comboDiscount);
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,16 +34,24 @@ export const CartDrawer: React.FC = () => {
     setCouponSuccess(null);
 
     const clean = couponCode.trim().toUpperCase();
-    if (clean === 'VIP10' || clean === 'MEFLAGROU10') {
+    if (clean === 'VIP10' || clean === 'MEFLAGROU10' || clean === 'BALADA10' || clean === 'FESTIVAL') {
       const disc = currentTotal * 0.1;
       setCouponDiscount(disc);
-      setCouponSuccess('Cupom de 10% OFF aplicado com sucesso!');
-    } else if (clean === 'FESTIVAL20') {
+      setCouponSuccess('Cupom de 10% OFF aplicado com sucesso! 🎉');
+      haptics.success();
+    } else if (clean === 'MEFLAGROUVIP') {
+      const disc = currentTotal * 0.15;
+      setCouponDiscount(disc);
+      setCouponSuccess('Cupom VIP Master de 15% OFF aplicado com sucesso! 👑');
+      haptics.success();
+    } else if (clean === 'FESTIVAL20' || clean === 'MASTER20') {
       const disc = currentTotal * 0.2;
       setCouponDiscount(disc);
-      setCouponSuccess('Cupom de 20% OFF aplicado com sucesso!');
+      setCouponSuccess('Super Cupom de 20% OFF aplicado com sucesso! 🔥');
+      haptics.success();
     } else {
-      setCouponError('Cupom inválido ou expirado.');
+      setCouponError('Cupom inválido. Tente: MEFLAGROUVIP, BALADA10 ou FESTIVAL20');
+      haptics.error();
     }
   };
 
@@ -242,6 +254,12 @@ export const CartDrawer: React.FC = () => {
                 <span>Desconto de Pacote</span>
                 <span>- R$ {bundleDiscount.toFixed(2).replace('.', ',')}</span>
               </div>
+              {isComboActive && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#ffb703', fontWeight: 700, fontSize: '0.74rem' }}>
+                  <span>🔥 Combo 3+ Flagras</span>
+                  <span>BÔNUS ATIVO</span>
+                </div>
+              )}
               {couponDiscount > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--accent-cyan)' }}>
                   <span>Cupom Promocional</span>
