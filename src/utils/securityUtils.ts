@@ -150,23 +150,40 @@ export function sanitizeInput(input: string): string {
     .trim();
 }
 
-/**
- * Registration Form Payload Validation
- */
+export interface UserRegistrationParams {
+  name: string;
+  cpf: string;
+  whatsapp?: string;
+  email1?: string;
+  email2?: string;
+  email?: string;
+  rua?: string;
+  street?: string;
+  numero?: string;
+  number?: string;
+  bairro?: string;
+  neighborhood?: string;
+  cidade?: string;
+  city?: string;
+  estado?: string;
+  state?: string;
+  cep?: string;
+  estadoCivil?: string;
+  maritalStatus?: string;
+  instagram?: string;
+  tiktok?: string;
+  twitter?: string;
+  x?: string;
+  photoDataUrl?: string | null;
+}
+
 export interface RegistrationValidationResult {
   isValid: boolean;
   error?: string;
   field?: 'name' | 'cpf' | 'whatsapp' | 'email1' | 'email2' | 'photo';
 }
 
-export function validateRegistrationForm(data: {
-  name: string;
-  cpf: string;
-  whatsapp?: string;
-  email1: string;
-  email2?: string;
-  photoDataUrl: string | null;
-}): RegistrationValidationResult {
+export function validateRegistrationForm(data: UserRegistrationParams): RegistrationValidationResult {
   const cleanName = sanitizeInput(data.name);
   if (!cleanName || cleanName.length < 3) {
     return {

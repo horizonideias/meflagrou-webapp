@@ -42,6 +42,7 @@ interface InstagramFeedProps {
   onOpenHallOfFame?: () => void;
   onOpenRadar?: () => void;
   onOpenVipHub?: () => void;
+  onOpenLive?: (channelId?: string) => void;
   onOpenFullscreenGrid?: (initialPhoto?: EventPhoto, mode?: 'grid' | 'slideshow') => void;
 }
 
@@ -61,6 +62,7 @@ export const InstagramFeed: React.FC<InstagramFeedProps> = ({
   onOpenHallOfFame: _onOpenHallOfFame,
   onOpenRadar,
   onOpenVipHub,
+  onOpenLive,
   onOpenFullscreenGrid,
 }) => {
   const { clientPublishedPhotos } = useCart();
@@ -369,6 +371,23 @@ export const InstagramFeed: React.FC<InstagramFeedProps> = ({
               <span>Festivais</span>
             </button>
 
+            {onOpenLive && (
+              <button
+                onClick={() => onOpenLive()}
+                className="filter-chip"
+                style={{
+                  background: 'rgba(255, 0, 122, 0.18)',
+                  border: '1px solid #ff007a',
+                  color: '#fff',
+                  fontWeight: 800
+                }}
+                title="Abrir Central de Transmissões Ao Vivo"
+              >
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff0055', display: 'inline-block' }} className="animate-pulse" />
+                <span>Lives Ao Vivo</span>
+              </button>
+            )}
+
             <button
               onClick={() => setSelectedFilter('sp')}
               className={`filter-chip ${selectedFilter === 'sp' ? 'active' : ''}`}
@@ -393,6 +412,7 @@ export const InstagramFeed: React.FC<InstagramFeedProps> = ({
           stories={stories}
           onOpenStory={onOpenStory}
           onOpenUpload={onOpenUpload}
+          onOpenLive={onOpenLive}
         />
       </div>
 

@@ -49,6 +49,38 @@ export interface UserProfile {
     allowTagging: boolean;
     notifyOnNewPhoto: boolean;
   };
+  securitySettings?: UserSecuritySettings;
+}
+
+export interface UserSecuritySettings {
+  twoFactorEnabled?: boolean;
+  twoFactorMethod?: 'whatsapp' | 'sms' | 'app';
+  faceIdBiometricEnabled?: boolean;
+  loginAlertsWhatsApp?: boolean;
+  securityPin?: string;
+  securityScore?: number;
+  lastPasswordChange?: string;
+  backupCodesCount?: number;
+  loginAlerts?: boolean;
+  biometricLogin?: boolean;
+  trustedDevicesCount?: number;
+  activeSessions?: {
+    id: string;
+    device: string;
+    browser: string;
+    ip: string;
+    location: string;
+    lastActive: string;
+    isCurrent: boolean;
+  }[];
+  loginHistory?: {
+    id: string;
+    date: string;
+    device: string;
+    ip: string;
+    location: string;
+    status: 'success' | 'blocked' | 'suspicious';
+  }[];
 }
 
 export interface PhotoBoundingBox {

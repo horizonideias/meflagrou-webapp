@@ -11,7 +11,8 @@ import {
   CheckCircle2, 
   Megaphone, 
   Pause, 
-  Play 
+  Play,
+  Radio
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import type { UserProfile, EventPhoto } from '../types';
@@ -29,6 +30,7 @@ interface InstagramRightSidebarProps {
   onOpenBattle?: () => void;
   onOpenPhotoModal?: (photo: EventPhoto) => void;
   onOpenCommunityChat?: () => void;
+  onOpenLive?: () => void;
 }
 
 export const InstagramRightSidebar: React.FC<InstagramRightSidebarProps> = ({
@@ -41,6 +43,7 @@ export const InstagramRightSidebar: React.FC<InstagramRightSidebarProps> = ({
   onOpenBattle,
   onOpenPhotoModal,
   onOpenCommunityChat,
+  onOpenLive,
 }) => {
   const { sellerProfile, openSellerDashboard } = useCart();
   const isFounder = currentUser.id === 'user_founder';
@@ -269,6 +272,36 @@ export const InstagramRightSidebar: React.FC<InstagramRightSidebarProps> = ({
                 <span style={{ fontSize: '0.68rem', color: '#00f5d4', fontWeight: 700 }}>+1.4k</span>
               </div>
               <span style={{ fontSize: '0.72rem', color: '#00f5d4', fontWeight: 800 }}>Entrar no Chat →</span>
+            </div>
+          </div>
+        )}
+
+        {/* 2.18 🔴 LIVES EM TEMPO REAL */}
+        {onOpenLive && (
+          <div 
+            className="right-sidebar-block"
+            onClick={onOpenLive}
+            style={{
+              cursor: 'pointer',
+              background: 'linear-gradient(135deg, rgba(255, 0, 85, 0.12) 0%, rgba(255, 183, 3, 0.08) 100%)',
+              borderColor: 'rgba(255, 0, 85, 0.35)',
+              padding: '12px',
+              borderRadius: '16px',
+            }}
+          >
+            <div className="sidebar-block-header" style={{ marginBottom: 4 }}>
+              <div className="block-title-row">
+                <Radio size={15} color="#ff0055" className="animate-pulse" />
+                <span className="block-title" style={{ color: '#ff0055', fontWeight: 800 }}>Lives Ao Vivo</span>
+              </div>
+              <span style={{ fontSize: '0.6rem', fontWeight: 900, background: '#ff0055', color: '#fff', padding: '1px 6px', borderRadius: 6 }}>3 NO AR</span>
+            </div>
+            <p className="block-subtitle" style={{ color: 'var(--text-secondary)', marginBottom: 8, fontSize: '0.72rem' }}>
+              🎥 Transmissões ao vivo do Sunset Festival e Privilège Club!
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '0.68rem', color: 'var(--accent-teal)', fontWeight: 700 }}>👁️ 7.710 assistindo agora</span>
+              <span style={{ fontSize: '0.72rem', color: '#ff0055', fontWeight: 800 }}>Assistir / Transmitir →</span>
             </div>
           </div>
         )}

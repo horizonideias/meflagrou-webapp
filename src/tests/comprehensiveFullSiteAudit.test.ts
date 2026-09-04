@@ -10,11 +10,13 @@ import {
 } from '../utils/securityUtils';
 import { calculateMasterDeusSplit, calculateCommissionCascade } from '../types/commerce';
 import { MOCK_USERS, MOCK_EVENTS, MOCK_PHOTOS } from '../data/mockDatabase';
+import { MOCK_STORIES } from '../data/mockStories';
 import { dbService } from '../services/databaseService';
+import { AuthSecurityService } from '../services/authSecurityService';
 import type { UserProfile, EventPhoto, Transaction } from '../types';
 
-// Mock localStorage for test environment
-const createMockLocalStorage = () => {
+// Mock localStorage and sessionStorage for test environment
+const createMockStorage = () => {
   let store: Record<string, string> = {};
   return {
     getItem: (key: string) => store[key] || null,
@@ -30,7 +32,9 @@ const createMockLocalStorage = () => {
   };
 };
 
-const mockLocalStorage = createMockLocalStorage();
+const mockLocalStorage = createMockStorage();
+const mockSessionStorage = createMockStorage();
+
 if (typeof globalThis.localStorage === 'undefined') {
   Object.defineProperty(globalThis, 'localStorage', {
     value: mockLocalStorage,
@@ -38,9 +42,17 @@ if (typeof globalThis.localStorage === 'undefined') {
   });
 }
 
+if (typeof globalThis.sessionStorage === 'undefined') {
+  Object.defineProperty(globalThis, 'sessionStorage', {
+    value: mockSessionStorage,
+    writable: true,
+  });
+}
+
 describe('🔬 AUDITORIA & TESTE GERAL DO MEFLAGROU.COM', () => {
   beforeEach(() => {
     mockLocalStorage.clear();
+    mockSessionStorage.clear();
   });
 
   // =========================================================================
@@ -344,6 +356,99 @@ describe('🔬 AUDITORIA & TESTE GERAL DO MEFLAGROU.COM', () => {
     it('o utilitário de haptics não deve quebrar em ambientes sem suporte', () => {
       const isSupported = typeof window !== 'undefined' && typeof navigator !== 'undefined' && 'vibrate' in navigator;
       expect(typeof isSupported).toBe('boolean');
+    });
+  });
+
+  // =========================================================================
+  // 10. SEGURANÇA DE AUTENTICAÇÃO, 2FA & PROTEÇÃO CONTRA FORÇA BRUTA
+  // =========================================================================
+  describe('🔐 10. Camada de Segurança de Autenticação (AuthSecurityService)', () => {
+    it('deve avaliar a força da senha com precisão e sugestões de melhoria', () => {
+      // Muito fraca
+      const weak = AuthSecurityService.evaluatePasswordStrength('123');
+      expect(weak.score).toBeLessThanOrEqual(1);
+      expect(weak.label).toMatch(/Fraca/i);
+
+      // Média
+      const med = AuthSecurityService.evaluatePasswordStrength('Meflagrou1');
+      expect(med.score).toBeGreaterThanOrEqual(2);
+
+      // Forte / Imbatível
+      const strong = AuthSecurityService.evaluatePasswordStrength('Meflagrou@2026!Vip');
+      expect(strong.score).toBeGreaterThanOrEqual(3);
+      expect(strong.color).toBeDefined();
+    });
+
+    it('deve gerar desafio 2FA de 6 dígitos e validar com sucesso', () => {
+      const challenge = AuthSecurityService.generate2FAChallenge('(11) 99999-8888');
+      expect(challenge.code).toMatch(/^\d{6}$/);
+      expect(challenge.phone).toBe('(11) 99999-8888');
+      expect(challenge.attemptsLeft).toBe(3);
+
+      // Código errado
+      const failedVerify = AuthSecurityService.verify2FACode('000000');
+      expect(failedVerify.success).toBe(false);
+      expect(failedVerify.error).toBeDefined();
+
+      // Código correto
+      const successVerify = AuthSecurityService.verify2FACode(challenge.code);
+      expect(successVerify.success).toBe(true);
+    });
+
+    it('deve bloquear após 5 tentativas falhas de login (Brute-Force Lockout)', () => {
+      AuthSecurityService.resetFailedAttempts();
+
+      let result = { locked: false, remainingAttempts: 5 };
+      for (let i = 0; i < 4; i++) {
+        result = AuthSecurityService.recordFailedAttempt();
+        expect(result.locked).toBe(false);
+      }
+
+      // 5ª tentativa falha
+      const finalResult = AuthSecurityService.recordFailedAttempt();
+      expect(finalResult.locked).toBe(true);
+      expect(finalResult.remainingSeconds).toBe(60);
+
+      const status = AuthSecurityService.isLockedOut();
+      expect(status.locked).toBe(true);
+      expect(status.remainingSeconds).toBeGreaterThan(0);
+
+      // Reset
+      AuthSecurityService.resetFailedAttempts();
+      const afterReset = AuthSecurityService.isLockedOut();
+      expect(afterReset.locked).toBe(false);
+    });
+
+    it('deve gerar token criptográfico de sessão de 3 partes (JWT-like)', () => {
+      const token = AuthSecurityService.createSecureSessionToken('user_test_token_01');
+      expect(token).toBeDefined();
+      const parts = token.split('.');
+      expect(parts.length).toBe(3);
+    });
+  });
+
+  // =========================================================================
+  // 11. SERVIÇO DE LIVE STREAMING & TRANSMISSÕES AO VIVO
+  // =========================================================================
+  describe('🔴 11. Serviço de Live Streaming do Usuário (Broadcaster & Viewer)', () => {
+    it('deve conter stories ao vivo configurados com liveViewerCount e liveChannelId', () => {
+      const liveStories = MOCK_STORIES.filter(s => s.isLive);
+      expect(liveStories.length).toBeGreaterThan(0);
+      liveStories.forEach(s => {
+        expect(s.isLive).toBe(true);
+        expect(s.liveViewerCount).toBeGreaterThan(0);
+        expect(s.liveChannelId).toBeDefined();
+      });
+    });
+
+    it('deve calcular a gorjeta PIX instantânea para streamers ao vivo', () => {
+      const tipAmounts = [5.00, 10.00, 25.00, 50.00];
+      tipAmounts.forEach(amount => {
+        const split = calculateMasterDeusSplit(amount);
+        expect(split.ownerAmount).toBeCloseTo(amount * 0.90, 2);
+        expect(split.deusRoyaltyAmount).toBeCloseTo(amount * 0.09, 2);
+        expect(split.platformSiteAmount).toBeCloseTo(amount * 0.01, 2);
+      });
     });
   });
 });

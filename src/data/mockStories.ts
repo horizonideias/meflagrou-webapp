@@ -20,6 +20,9 @@ export interface StoryItem {
   authorType: 'founder' | 'photographer' | 'client';
   badge: string;
   isDeus?: boolean;
+  isLive?: boolean;
+  liveViewerCount?: number;
+  liveChannelId?: string;
   rankPosition?: number; // 1 = #1 DEUS, 2 = #2 Top Fotografo, 3 = #3 Top VIP
   isPinnedTop?: boolean;
   slides: StorySlide[];
@@ -36,6 +39,9 @@ const PINNED_TOP_3_STORIES: StoryItem[] = [
     authorType: 'founder',
     badge: '👑 RANK #1 • Fundador & VIP Master',
     isDeus: true,
+    isLive: true,
+    liveViewerCount: 2480,
+    liveChannelId: 'live_sunset_01',
     rankPosition: 1,
     isPinnedTop: true,
     slides: [

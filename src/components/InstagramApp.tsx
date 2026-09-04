@@ -42,6 +42,7 @@ const ReferralCashbackModal = React.lazy(() => import('./ReferralCashbackModal')
 const FlagrantesSearchModal = React.lazy(() => import('./FlagrantesSearchModal').then(m => ({ default: m.FlagrantesSearchModal })));
 const FullscreenPhotoSlideshowModal = React.lazy(() => import('./FullscreenPhotoSlideshowModal').then(m => ({ default: m.FullscreenPhotoSlideshowModal })));
 const CommunityLiveChatModal = React.lazy(() => import('./CommunityLiveChatModal').then(m => ({ default: m.CommunityLiveChatModal })));
+const UserLiveStreamModal = React.lazy(() => import('./UserLiveStreamModal').then(m => ({ default: m.UserLiveStreamModal })));
 import { useCart } from '../context/CartContext';
 import { dbService } from '../services/databaseService';
 import { Bell, ShoppingBag, Users, X, Check, Search, LogOut } from 'lucide-react';
@@ -122,6 +123,8 @@ export const InstagramApp: React.FC = () => {
   const [isProfileSwitcherOpen, setIsProfileSwitcherOpen] = useState<boolean>(false);
   const [isEnrollmentOpen, setIsEnrollmentOpen] = useState<boolean>(false);
   const [uploadSuccessToast, setUploadSuccessToast] = useState<string | null>(null);
+  const [isLiveStreamOpen, setIsLiveStreamOpen] = useState<boolean>(false);
+  const [activeLiveChannelId, setActiveLiveChannelId] = useState<string | undefined>(undefined);
 
   // Fullscreen Photo Grid & Slideshow Mode
   const [isFullscreenSlideshowOpen, setIsFullscreenSlideshowOpen] = useState<boolean>(false);
@@ -370,6 +373,10 @@ export const InstagramApp: React.FC = () => {
           onOpenHeatmap={() => setIsHeatmapOpen(true)}
           onOpenReferral={() => setIsReferralOpen(true)}
           onOpenCommunityChat={() => setIsCommunityChatOpen(true)}
+          onOpenLive={() => {
+            setActiveLiveChannelId(undefined);
+            setIsLiveStreamOpen(true);
+          }}
           onLogout={handleLogout}
         />
 
@@ -392,6 +399,10 @@ export const InstagramApp: React.FC = () => {
               onOpenHallOfFame={() => setIsHallOfFameOpen(true)}
               onOpenRadar={() => setIsRadarOpen(true)}
               onOpenVipHub={() => setIsGlobalFeaturesHubOpen(true)}
+              onOpenLive={(channelId) => {
+                setActiveLiveChannelId(channelId);
+                setIsLiveStreamOpen(true);
+              }}
               onOpenFullscreenGrid={handleOpenFullscreenGridOrSlide}
             />
           ) : (
@@ -420,6 +431,10 @@ export const InstagramApp: React.FC = () => {
           onOpenBattle={() => setIsBattleModalOpen(true)}
           onOpenPhotoModal={(photo) => handleOpenPhotoModal(photo)}
           onOpenCommunityChat={() => setIsCommunityChatOpen(true)}
+          onOpenLive={() => {
+            setActiveLiveChannelId(undefined);
+            setIsLiveStreamOpen(true);
+          }}
         />
       </div>
 
@@ -731,6 +746,17 @@ export const InstagramApp: React.FC = () => {
           currentUser={currentUser}
           onClose={() => setIsFullscreenSlideshowOpen(false)}
           onSelectUser={handleSelectUser}
+        />
+      )}
+
+      {/* 🔴 Transmissão Ao Vivo & Espectador VIP de Lives */}
+      {isLiveStreamOpen && (
+        <UserLiveStreamModal
+          currentUser={currentUser}
+          isOpen={isLiveStreamOpen}
+          initialChannelId={activeLiveChannelId}
+          onClose={() => setIsLiveStreamOpen(false)}
+          onOpenPhotoModal={handleOpenPhotoModal}
         />
       )}
 

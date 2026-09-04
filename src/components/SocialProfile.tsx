@@ -23,13 +23,15 @@ import {
   ArrowLeft,
   Download,
   ShoppingBag,
-  Edit3
+  Edit3,
+  Radio
 } from 'lucide-react';
 import type { UserProfile, EventPhoto } from '../types';
 import { MOCK_PHOTOS, MOCK_USERS, MOCK_EVENTS } from '../data/mockDatabase';
 import { generateUserSamplePhotos } from '../data/userPhotoGenerator';
 import { usePwaInstall } from '../hooks/usePwaInstall';
 import { InstallAppModal } from './InstallAppModal';
+import { UserLiveStreamModal } from './UserLiveStreamModal';
 import { InstagramIcon, TikTokIcon, XIcon } from './Icons';
 import { InteractiveStage } from './InteractiveStage';
 import { useCart } from '../context/CartContext';
@@ -111,6 +113,7 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
   const [isLeagueOpen, setIsLeagueOpen] = useState<boolean>(false);
   const [isHubMenuOpen, setIsHubMenuOpen] = useState<boolean>(false);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState<boolean>(false);
+  const [isLiveModalOpen, setIsLiveModalOpen] = useState<boolean>(false);
 
   const handleSaveRegistration = (updatedUser: UserProfile) => {
     if (onUpdateProfile) {
@@ -423,8 +426,24 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
           </button>
 
           <button
+            onClick={() => { haptics.lightTick(); setIsLiveModalOpen(true); }}
+            className="hero-action-btn live"
+            style={{
+              background: 'rgba(255, 0, 85, 0.15)',
+              borderColor: 'rgba(255, 0, 85, 0.4)',
+              color: '#ff0055'
+            }}
+          >
+            <Radio size={12} color="#ff0055" className="animate-pulse" />
+            <span>Transmitir Ao Vivo</span>
+          </button>
+
+          <button
             onClick={() => setIsBattleModalOpen(true)}
             className="hero-action-btn battle"
+            style={{
+              borderColor: 'var(--border-subtle)'
+            }}
           >
             <Swords size={12} color="#ff007a" />
             <span>Batalha 1x1</span>
@@ -1135,6 +1154,15 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
         <TermsAndPrivacyModal
           isOpen={isTermsModalOpen}
           onClose={() => setIsTermsModalOpen(false)}
+        />
+      )}
+
+      {isLiveModalOpen && (
+        <UserLiveStreamModal
+          currentUser={currentUser || user}
+          isOpen={isLiveModalOpen}
+          onClose={() => setIsLiveModalOpen(false)}
+          initialMode="broadcast"
         />
       )}
 

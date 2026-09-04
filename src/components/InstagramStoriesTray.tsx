@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { Plus, Crown, Video } from 'lucide-react';
+import { Plus, Crown, Video, Radio } from 'lucide-react';
 import type { UserProfile } from '../types';
 import { type StoryItem } from '../data/mockStories';
+import { haptics } from '../utils/haptics';
 
 interface InstagramStoriesTrayProps {
   currentUser: UserProfile;
   stories: StoryItem[];
   onOpenStory: (story: StoryItem) => void;
   onOpenUpload?: () => void;
+  onOpenLive?: (channelId?: string) => void;
 }
 
 export const InstagramStoriesTray: React.FC<InstagramStoriesTrayProps> = ({
@@ -15,6 +17,7 @@ export const InstagramStoriesTray: React.FC<InstagramStoriesTrayProps> = ({
   stories,
   onOpenStory,
   onOpenUpload,
+  onOpenLive,
 }) => {
   const [isPaused, setIsPaused] = useState<boolean>(false);
 
@@ -106,14 +109,25 @@ export const InstagramStoriesTray: React.FC<InstagramStoriesTrayProps> = ({
             return (
               <div
                 key={`${story.id}_${index}`}
-                onClick={() => onOpenStory(story)}
+                onClick={() => {
+                  haptics.lightTick();
+                  if (story.isLive && onOpenLive) {
+                    onOpenLive(story.liveChannelId);
+                  } else {
+                    onOpenStory(story);
+                  }
+                }}
                 className="story-avatar-item animated-video-story-item"
               >
                 {/* Conic Ring */}
                 <div
                   className={`story-ring story-animated-video-ring ${
-                    isStoryFounder ? 'ring-founder' : 'ring-active'
+                    story.isLive ? 'ring-live' : isStoryFounder ? 'ring-founder' : 'ring-active'
                   }`}
+                  style={story.isLive ? {
+                    background: 'conic-gradient(from 0deg, #ff0055, #ff007a, #ffb703, #ff0055)',
+                    boxShadow: '0 0 16px rgba(255, 0, 122, 0.7)'
+                  } : undefined}
                 >
                   <div className="story-ring-inner">
                     <img
@@ -124,13 +138,35 @@ export const InstagramStoriesTray: React.FC<InstagramStoriesTrayProps> = ({
                   </div>
 
                   {/* Equalizer Audio Bars */}
-                  <div className="story-video-equalizer-pill">
-                    <span className="eq-bar bar-1" />
-                    <span className="eq-bar bar-2" />
-                    <span className="eq-bar bar-3" />
-                  </div>
+                  {!story.isLive && (
+                    <div className="story-video-equalizer-pill">
+                      <span className="eq-bar bar-1" />
+                      <span className="eq-bar bar-2" />
+                      <span className="eq-bar bar-3" />
+                    </div>
+                  )}
 
-                  {isStoryFounder ? (
+                  {story.isLive ? (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: -4,
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      background: '#ff0055',
+                      color: '#fff',
+                      fontSize: '0.58rem',
+                      fontWeight: 900,
+                      padding: '1px 5px',
+                      borderRadius: 4,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      boxShadow: '0 0 8px rgba(255,0,85,0.8)'
+                    }}>
+                      <Radio size={8} className="animate-pulse" />
+                      <span>AO VIVO</span>
+                    </div>
+                  ) : isStoryFounder ? (
                     <div className="story-crown-badge">
                       <Crown size={10} color="#07080c" />
                     </div>
@@ -142,7 +178,7 @@ export const InstagramStoriesTray: React.FC<InstagramStoriesTrayProps> = ({
                 </div>
 
                 {/* Username label */}
-                <span className="story-username-label">
+                <span className="story-username-label" style={story.isLive ? { color: '#ff007a', fontWeight: 800 } : undefined}>
                   {story.authorName.split(' ')[0]}
                 </span>
               </div>

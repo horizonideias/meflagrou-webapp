@@ -12,7 +12,8 @@ import {
   Flame,
   Gift,
   Search,
-  LogOut
+  LogOut,
+  Radio
 } from 'lucide-react';
 import type { UserProfile } from '../types';
 import { useCart } from '../context/CartContext';
@@ -35,6 +36,7 @@ interface InstagramSidebarProps {
   onOpenReferral?: () => void;
   onOpenSearch?: () => void;
   onOpenCommunityChat?: () => void;
+  onOpenLive?: () => void;
   onLogout?: () => void;
 }
 
@@ -54,6 +56,7 @@ export const InstagramSidebar: React.FC<InstagramSidebarProps> = ({
   onOpenReferral,
   onOpenSearch,
   onOpenCommunityChat,
+  onOpenLive,
   onLogout,
 }) => {
   const { cart, openCart } = useCart();
@@ -104,6 +107,24 @@ export const InstagramSidebar: React.FC<InstagramSidebarProps> = ({
             <span className="nav-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               ChatOnline
               <span style={{ fontSize: '0.62rem', background: 'rgba(255, 0, 122, 0.2)', border: '1px solid #ff007a', color: '#ff007a', padding: '1px 5px', borderRadius: 6, fontWeight: 800 }}>LIVE</span>
+            </span>
+          </button>
+        )}
+
+        {/* 🔴 Lives Ao Vivo VIP */}
+        {onOpenLive && (
+          <button
+            onClick={onOpenLive}
+            className="instagram-nav-item"
+            title="Assistir ou Transmitir Lives Ao Vivo"
+          >
+            <div style={{ position: 'relative' }}>
+              <Radio size={22} className="nav-icon text-magenta animate-pulse" />
+              <span className="nav-badge-dot" style={{ background: '#ff0055', boxShadow: '0 0 8px #ff0055' }} />
+            </div>
+            <span className="nav-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              Lives Ao Vivo
+              <span style={{ fontSize: '0.62rem', background: '#ff0055', color: '#fff', padding: '1px 5px', borderRadius: 6, fontWeight: 900 }}>3</span>
             </span>
           </button>
         )}

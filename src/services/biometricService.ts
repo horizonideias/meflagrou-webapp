@@ -421,6 +421,20 @@ export interface UserRegistrationParams {
   phone?: string;
   address?: string;
   cep?: string;
+  rua?: string;
+  street?: string;
+  numero?: string;
+  number?: string;
+  bairro?: string;
+  neighborhood?: string;
+  estadoCivil?: string;
+  maritalStatus?: string;
+  socialLinks?: {
+    instagram?: string;
+    tiktok?: string;
+    x?: string;
+    twitter?: string;
+  };
   email1?: string;
   email2?: string;
   email?: string;
@@ -442,18 +456,28 @@ export function enrollNewUserFace(
   let whatsapp = '';
   let address = '';
   let cep = '';
+  let street = '';
+  let number = '';
+  let neighborhood = '';
+  let maritalStatus = 'Solteiro(a)';
   let email1 = '';
   let email2 = '';
   let city = 'São Paulo';
   let state = 'SP';
   let avatarDataUrl = '';
+  let userSocialLinks: { instagram?: string; tiktok?: string; x?: string; twitter?: string } = {};
 
   if (typeof dataOrName === 'object') {
     name = dataOrName.name || '';
     cpf = dataOrName.cpf || '';
     whatsapp = dataOrName.whatsapp || dataOrName.phone || '';
     address = dataOrName.address || '';
-    cep = (dataOrName as { cep?: string }).cep || '';
+    cep = dataOrName.cep || '';
+    street = dataOrName.rua || dataOrName.street || '';
+    number = dataOrName.numero || dataOrName.number || '';
+    neighborhood = dataOrName.bairro || dataOrName.neighborhood || '';
+    maritalStatus = dataOrName.estadoCivil || dataOrName.maritalStatus || 'Solteiro(a)';
+    userSocialLinks = dataOrName.socialLinks || {};
     email1 = dataOrName.email1 || '';
     email2 = dataOrName.email2 || '';
     handle = dataOrName.handle || name.toLowerCase().replace(/\s+/g, '_');
@@ -491,8 +515,12 @@ export function enrollNewUserFace(
     cpf,
     whatsapp,
     phone: whatsapp,
-    address,
+    address: address || (street ? `${street}, ${number} - ${neighborhood}` : ''),
     cep,
+    street,
+    number,
+    neighborhood,
+    maritalStatus,
     email1,
     email2,
     email: email1 || email2,
@@ -523,7 +551,10 @@ export function enrollNewUserFace(
       },
     ],
     socialLinks: {
-      instagram: cleanHandle,
+      instagram: userSocialLinks.instagram || cleanHandle,
+      tiktok: userSocialLinks.tiktok,
+      x: userSocialLinks.x || userSocialLinks.twitter,
+      twitter: userSocialLinks.twitter || userSocialLinks.x
     },
     privacySettings: {
       isPublic: true,
