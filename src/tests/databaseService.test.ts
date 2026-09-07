@@ -24,6 +24,12 @@ describe('Database & Persistence Service (Multi-Tier IndexedDB & LocalStorage)',
       id: 'test_db_user_1',
       name: 'Test Database User',
       handle: 'test_db_user',
+      cpf: '555.666.777-88',
+      phone: '(11) 95555-4444',
+      whatsapp: '(11) 95555-4444',
+      email: 'test_db_user@meflagrou.com',
+      email1: 'test_db_user@meflagrou.com',
+      email2: 'test_db_user@meflagrou.com',
     };
 
     await dbService.saveUser(testUser);

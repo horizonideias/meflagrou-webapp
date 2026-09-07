@@ -1,5 +1,12 @@
 import type { UserProfile, EventPhoto, EventData, Transaction } from '../types';
 import { MOCK_USERS, MOCK_PHOTOS, MOCK_EVENTS } from '../data/mockDatabase';
+import { 
+  checkUserUniqueness, 
+  normalizeCpfForComparison, 
+  normalizePhoneForComparison, 
+  normalizeEmailForComparison, 
+  normalizeHandleForComparison 
+} from '../utils/securityUtils';
 
 const DB_NAME = 'meflagrou_database';
 const DB_VERSION = 1;
@@ -176,8 +183,18 @@ class MeflagrouDatabaseService {
   // ==========================================
 
   // Save or update user (persist in IndexedDB + LocalStorage + in-memory array)
-  async saveUser(user: UserProfile): Promise<boolean> {
+  async saveUser(user: UserProfile, options?: { skipUniquenessCheck?: boolean }): Promise<boolean> {
     await this.init();
+
+    // Enforce database uniqueness on CPF, WhatsApp/Phone, Email, and Handle
+    if (!options?.skipUniquenessCheck) {
+      const all = await this.getAllUsers();
+      const uniqueness = checkUserUniqueness(all, user, user.id);
+      if (!uniqueness.isUnique) {
+        console.warn(`[MeflagrouDB] Bloqueio de duplicidade ao salvar usuário: ${uniqueness.error}`);
+        return false;
+      }
+    }
 
     // 1. In-memory
     const idx = MOCK_USERS.findIndex((u) => u.id === user.id);
@@ -234,9 +251,70 @@ class MeflagrouDatabaseService {
 
   // Find user by Instagram handle
   async getUserByHandle(handle: string): Promise<UserProfile | null> {
-    const cleanHandle = handle.replace('@', '').toLowerCase();
+    const cleanHandle = normalizeHandleForComparison(handle);
     const users = await this.getAllUsers();
-    return users.find((u) => u.handle.toLowerCase() === cleanHandle) || null;
+    return users.find((u) => normalizeHandleForComparison(u.handle) === cleanHandle) || null;
+  }
+
+  // Find user by CPF (normalized digits comparison)
+  async getUserByCpf(cpf: string): Promise<UserProfile | null> {
+    const cleanCpf = normalizeCpfForComparison(cpf);
+    if (!cleanCpf) return null;
+    const users = await this.getAllUsers();
+    return users.find((u) => normalizeCpfForComparison(u.cpf) === cleanCpf) || null;
+  }
+
+  // Find user by WhatsApp / Phone (normalized digits comparison)
+  async getUserByPhone(phone: string): Promise<UserProfile | null> {
+    const cleanPhone = normalizePhoneForComparison(phone);
+    if (!cleanPhone) return null;
+    const users = await this.getAllUsers();
+    return (
+      users.find((u) => {
+        const uPhone = normalizePhoneForComparison(u.whatsapp || u.phone);
+        return uPhone && (uPhone === cleanPhone || uPhone.endsWith(cleanPhone) || cleanPhone.endsWith(uPhone));
+      }) || null
+    );
+  }
+
+  // Find user by Email (case-insensitive across email, email1, email2)
+  async getUserByEmail(email: string): Promise<UserProfile | null> {
+    const cleanEmail = normalizeEmailForComparison(email);
+    if (!cleanEmail) return null;
+    const users = await this.getAllUsers();
+    return (
+      users.find((u) => {
+        const uEmails = [
+          normalizeEmailForComparison(u.email),
+          normalizeEmailForComparison(u.email1),
+          normalizeEmailForComparison(u.email2),
+        ].filter(Boolean);
+        return uEmails.includes(cleanEmail);
+      }) || null
+    );
+  }
+
+  // Verify if candidate data already exists in database
+  async isDataDuplicate(
+    candidate: {
+      id?: string;
+      cpf?: string;
+      whatsapp?: string;
+      phone?: string;
+      email?: string;
+      email1?: string;
+      email2?: string;
+      handle?: string;
+    },
+    excludeUserId?: string
+  ): Promise<{ isDuplicate: boolean; duplicateField?: string; message?: string }> {
+    const users = await this.getAllUsers();
+    const result = checkUserUniqueness(users, candidate, excludeUserId || candidate.id);
+    return {
+      isDuplicate: !result.isUnique,
+      duplicateField: result.duplicateField,
+      message: result.error,
+    };
   }
 
   // ==========================================

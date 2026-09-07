@@ -1,6 +1,7 @@
 import type { UserProfile, ScanResult } from '../types';
 import { MOCK_USERS, MOCK_PHOTOS } from '../data/mockDatabase';
 import { dbService } from './databaseService';
+import { checkUserUniqueness } from '../utils/securityUtils';
 
 class SoundSynthesizer {
   private ctx: AudioContext | null = null;
@@ -507,6 +508,22 @@ export function enrollNewUserFace(
     .replace('@', '')
     .trim()
     .toLowerCase();
+
+  // Validate uniqueness across existing users
+  const uniqueness = checkUserUniqueness(MOCK_USERS, {
+    id: newUserId,
+    cpf,
+    whatsapp,
+    phone: whatsapp,
+    email: email1 || email2,
+    email1,
+    email2,
+    handle: cleanHandle,
+  });
+
+  if (!uniqueness.isUnique) {
+    throw new Error(uniqueness.error || 'Dados cadastrais duplicados. Usuário já existe.');
+  }
   
   const newUser: UserProfile = {
     id: newUserId,

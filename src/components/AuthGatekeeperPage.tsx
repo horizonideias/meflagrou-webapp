@@ -7,7 +7,10 @@ import {
   ArrowRight, 
   AlertCircle, 
   ShieldCheck,
-  KeyRound
+  KeyRound,
+  Check,
+  Camera,
+  RefreshCw
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import type { UserProfile } from '../types';
@@ -18,10 +21,14 @@ import {
   formatWhatsAppPhone, 
   isValidCPF, 
   isValidRealFullName,
-  formatCPF,
-  formatCEP 
+  formatCPF, 
+  formatCEP,
+  isValidEmail,
+  isValidPhone,
+  checkUserUniqueness
 } from '../utils/securityUtils';
 import { AuthSecurityService, type PasswordStrengthResult } from '../services/authSecurityService';
+import { WhatsAppGatewayService } from '../services/whatsappGatewayService';
 import { haptics } from '../utils/haptics';
 import { MeflagrouLogo } from './MeflagrouLogo';
 
@@ -63,6 +70,8 @@ export const AuthGatekeeperPage: React.FC<AuthGatekeeperPageProps> = ({
   const [regX, setRegX] = useState<string>('');
   const [regPassword, setRegPassword] = useState<string>('');
   const [showRegPassword, setShowRegPassword] = useState<boolean>(false);
+  const [regAvatarUrl, setRegAvatarUrl] = useState<string>('https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80');
+  const [regTermsAccepted, setRegTermsAccepted] = useState<boolean>(true);
   const [regError, setRegError] = useState<string | null>(null);
   const [isSearchingCep, setIsSearchingCep] = useState<boolean>(false);
 
@@ -112,6 +121,37 @@ export const AuthGatekeeperPage: React.FC<AuthGatekeeperPageProps> = ({
 
   const passwordStrength: PasswordStrengthResult = AuthSecurityService.evaluatePasswordStrength(regPassword);
 
+  const sampleAvatars = [
+    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80'
+  ];
+
+  const handleCycleAvatar = () => {
+    const currentIdx = sampleAvatars.indexOf(regAvatarUrl);
+    const nextIdx = (currentIdx + 1) % sampleAvatars.length;
+    setRegAvatarUrl(sampleAvatars[nextIdx]);
+    soundFx.playRadarTick();
+    haptics.lightTick();
+  };
+
+  const handleAvatarFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setRegAvatarUrl(event.target.result as string);
+          soundFx.playLandmarkLock();
+          haptics.success();
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // Mask Phone Input ((XX) 9XXXX-XXXX)
   const handlePhoneMask = (value: string, setter: (v: string) => void) => {
     setter(formatWhatsAppPhone(value));
@@ -148,9 +188,10 @@ export const AuthGatekeeperPage: React.FC<AuthGatekeeperPageProps> = ({
     }
   };
 
-  // Trigger 2FA Challenge
+  // Trigger 2FA Challenge with Real Evolution API WhatsApp integration
   const trigger2FA = (user: UserProfile, isRegister: boolean) => {
-    const challenge = AuthSecurityService.generate2FAChallenge(user.whatsapp || loginPhone);
+    const targetPhone = user.whatsapp || user.phone || loginPhone;
+    const challenge = AuthSecurityService.generate2FAChallenge(targetPhone);
     setPendingUser(user);
     setIsRegisterPending(isRegister);
     setMode('2fa');
@@ -158,7 +199,12 @@ export const AuthGatekeeperPage: React.FC<AuthGatekeeperPageProps> = ({
     setOtpError(null);
     setResendCooldown(45);
     
-    // Simulate instant WhatsApp push notification delivery
+    // Send real WhatsApp message via VPS Evolution API
+    WhatsAppGatewayService.send2FACode(targetPhone, challenge.code, user.name).catch((err) => {
+      console.warn('WhatsApp gateway notice:', err);
+    });
+
+    // Simulate instant WhatsApp push notification delivery banner
     setSimulatedOtpReceived(challenge.code);
     soundFx.playLandmarkLock();
     haptics.notification();
@@ -197,7 +243,7 @@ export const AuthGatekeeperPage: React.FC<AuthGatekeeperPageProps> = ({
       
       let user = usersPool.find((u) => {
         const uPhone = (u.whatsapp || u.phone || '').replace(/\D/g, '');
-        return cleanPhone.length >= 10 && uPhone.includes(cleanPhone.slice(-8));
+        return cleanPhone.length >= 10 && (uPhone === cleanPhone || uPhone.endsWith(cleanPhone) || cleanPhone.endsWith(uPhone));
       });
 
       if (!user) {
@@ -226,42 +272,74 @@ export const AuthGatekeeperPage: React.FC<AuthGatekeeperPageProps> = ({
 
     if (!cleanName || !isValidRealFullName(cleanName)) {
       setRegError('Informe seu Nome Verdadeiro completo (pelo menos 2 nomes).');
+      soundFx.playErrorBuzz();
       haptics.error();
       return;
     }
 
     if (!cleanCpf || !isValidCPF(regCpf)) {
       setRegError('Informe um CPF válido (Módulo 11 obrigatório).');
+      soundFx.playErrorBuzz();
       haptics.error();
       return;
     }
 
     if (!cleanPhone || cleanPhone.length < 10) {
       setRegError('Informe seu Celular/WhatsApp com DDD.');
+      soundFx.playErrorBuzz();
       haptics.error();
       return;
     }
 
-    if (!regEmail || !regEmail.includes('@')) {
-      setRegError('Informe um E-mail válido.');
+    if (!regEmail || !isValidEmail(regEmail)) {
+      setRegError('Informe um endereço de e-mail válido (ex: seu@email.com).');
+      soundFx.playErrorBuzz();
       haptics.error();
       return;
     }
 
     if (!cleanCep || cleanCep.length < 8) {
       setRegError('Informe seu CEP com 8 dígitos.');
+      soundFx.playErrorBuzz();
       haptics.error();
       return;
     }
 
     if (!regRua || !regNumero || !regBairro) {
       setRegError('Complete seu endereço (Rua, Número e Bairro).');
+      soundFx.playErrorBuzz();
       haptics.error();
       return;
     }
 
     if (passwordStrength.score < 2) {
       setRegError('Crie uma senha mais forte com números e letras.');
+      soundFx.playErrorBuzz();
+      haptics.error();
+      return;
+    }
+
+    if (!regTermsAccepted) {
+      setRegError('Você precisa concordar com os Termos de Proteção de Dados e LGPD.');
+      soundFx.playErrorBuzz();
+      haptics.error();
+      return;
+    }
+
+    // 🔒 ZERO DUPLICATES: Check CPF, Phone, Email and Handle against all existing users
+    const usersPool = allUsers && allUsers.length > 0 ? allUsers : MOCK_USERS;
+    const uniqueness = checkUserUniqueness(usersPool, {
+      cpf: regCpf,
+      whatsapp: regPhone,
+      phone: regPhone,
+      email: regEmail,
+      email1: regEmail,
+      handle: cleanName.toLowerCase().replace(/\s+/g, '_'),
+    });
+
+    if (!uniqueness.isUnique) {
+      setRegError(uniqueness.error || 'Dados cadastrais já vinculados a outra conta.');
+      soundFx.playErrorBuzz();
       haptics.error();
       return;
     }
@@ -272,33 +350,39 @@ export const AuthGatekeeperPage: React.FC<AuthGatekeeperPageProps> = ({
     setTimeout(() => {
       setIsLoading(false);
 
-      const registeredUser = enrollNewUserFace({
-        name: cleanName,
-        cpf: regCpf.trim(),
-        whatsapp: regPhone.trim(),
-        phone: regPhone.trim(),
-        email1: regEmail.trim().toLowerCase(),
-        email2: regEmail.trim().toLowerCase(),
-        email: regEmail.trim().toLowerCase(),
-        cep: regCep.trim(),
-        rua: regRua.trim(),
-        numero: regNumero.trim(),
-        bairro: regBairro.trim(),
-        city: regCity.split(',')[0].trim() || 'São Paulo',
-        state: regState || 'SP',
-        estadoCivil: regCivilState,
-        socialLinks: {
-          instagram: regInstagram.trim(),
-          tiktok: regTiktok.trim(),
-          x: regX.trim(),
-          twitter: regX.trim()
-        },
-        handle: cleanName.toLowerCase().replace(/\s+/g, '_'),
-        avatarDataUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
-      });
+      try {
+        const registeredUser = enrollNewUserFace({
+          name: cleanName,
+          cpf: regCpf.trim(),
+          whatsapp: regPhone.trim(),
+          phone: regPhone.trim(),
+          email1: regEmail.trim().toLowerCase(),
+          email2: regEmail.trim().toLowerCase(),
+          email: regEmail.trim().toLowerCase(),
+          cep: regCep.trim(),
+          rua: regRua.trim(),
+          numero: regNumero.trim(),
+          bairro: regBairro.trim(),
+          city: regCity.split(',')[0].trim() || 'São Paulo',
+          state: regState || 'SP',
+          estadoCivil: regCivilState,
+          socialLinks: {
+            instagram: regInstagram.trim(),
+            tiktok: regTiktok.trim(),
+            x: regX.trim(),
+            twitter: regX.trim()
+          },
+          handle: cleanName.toLowerCase().replace(/\s+/g, '_'),
+          avatarDataUrl: regAvatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+        });
 
-      // Proceed to 2FA phone activation
-      trigger2FA(registeredUser, true);
+        // Proceed to 2FA phone activation
+        trigger2FA(registeredUser, true);
+      } catch (err: any) {
+        setRegError(err.message || 'Não foi possível cadastrar o usuário devido a dados duplicados.');
+        soundFx.playErrorBuzz();
+        haptics.error();
+      }
     }, 600);
   };
 
@@ -725,6 +809,104 @@ export const AuthGatekeeperPage: React.FC<AuthGatekeeperPageProps> = ({
             </div>
 
             <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {/* 📸 Biometria Facial & Foto de Perfil */}
+              <div style={{
+                background: 'rgba(0, 245, 212, 0.05)',
+                border: '1px solid rgba(0, 245, 212, 0.25)',
+                borderRadius: 14,
+                padding: '10px 14px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14
+              }}>
+                <div style={{ position: 'relative' }}>
+                  <img
+                    src={regAvatarUrl}
+                    alt="Selfie Biometria"
+                    style={{
+                      width: 52,
+                      height: 52,
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '2px solid var(--accent-teal)',
+                      boxShadow: '0 0 15px rgba(0, 245, 212, 0.35)'
+                    }}
+                  />
+                  <div style={{
+                    position: 'absolute',
+                    bottom: -2,
+                    right: -2,
+                    background: 'var(--accent-teal)',
+                    color: '#07080c',
+                    borderRadius: '50%',
+                    width: 18,
+                    height: 18,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <Check size={11} strokeWidth={3} />
+                  </div>
+                </div>
+
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <ShieldCheck size={14} color="var(--accent-teal)" />
+                    Foto Selfie para Face ID
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                    Ativação do reconhecimento facial nos eventos
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button
+                    type="button"
+                    onClick={handleCycleAvatar}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: 8,
+                      padding: '6px 10px',
+                      color: '#fff',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4
+                    }}
+                    title="Alternar foto de demonstração"
+                  >
+                    <RefreshCw size={12} />
+                    <span>Mudar</span>
+                  </button>
+
+                  <label style={{
+                    background: 'rgba(0, 245, 212, 0.15)',
+                    border: '1px solid var(--accent-teal)',
+                    borderRadius: 8,
+                    padding: '6px 10px',
+                    color: 'var(--accent-teal)',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4
+                  }}>
+                    <Camera size={12} />
+                    <span>Upload</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarFileUpload}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                </div>
+              </div>
+
               {/* Nome Verdadeiro + CPF */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div>
@@ -740,7 +922,7 @@ export const AuthGatekeeperPage: React.FC<AuthGatekeeperPageProps> = ({
                     style={{
                       width: '100%',
                       background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid var(--border-subtle)',
+                      border: isValidRealFullName(regName) ? '1px solid rgba(0, 245, 212, 0.5)' : '1px solid var(--border-subtle)',
                       borderRadius: 10,
                       padding: '8px 10px',
                       color: '#fff',
@@ -763,7 +945,7 @@ export const AuthGatekeeperPage: React.FC<AuthGatekeeperPageProps> = ({
                     style={{
                       width: '100%',
                       background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid var(--border-subtle)',
+                      border: isValidCPF(regCpf) ? '1px solid rgba(0, 245, 212, 0.5)' : '1px solid var(--border-subtle)',
                       borderRadius: 10,
                       padding: '8px 10px',
                       color: '#fff',
@@ -789,7 +971,7 @@ export const AuthGatekeeperPage: React.FC<AuthGatekeeperPageProps> = ({
                     style={{
                       width: '100%',
                       background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid var(--border-subtle)',
+                      border: isValidPhone(regPhone) ? '1px solid rgba(0, 245, 212, 0.5)' : '1px solid var(--border-subtle)',
                       borderRadius: 10,
                       padding: '8px 10px',
                       color: '#fff',
@@ -812,7 +994,7 @@ export const AuthGatekeeperPage: React.FC<AuthGatekeeperPageProps> = ({
                     style={{
                       width: '100%',
                       background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid var(--border-subtle)',
+                      border: isValidEmail(regEmail) ? '1px solid rgba(0, 245, 212, 0.5)' : '1px solid var(--border-subtle)',
                       borderRadius: 10,
                       padding: '8px 10px',
                       color: '#fff',
@@ -1098,9 +1280,43 @@ export const AuthGatekeeperPage: React.FC<AuthGatekeeperPageProps> = ({
                 )}
               </div>
 
+              {/* LGPD & Proteção de Dados Checkbox */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 8,
+                marginTop: 2,
+                background: 'rgba(255, 255, 255, 0.03)',
+                padding: '8px 10px',
+                borderRadius: 8,
+                border: '1px solid var(--border-subtle)'
+              }}>
+                <input
+                  type="checkbox"
+                  id="lgpdConsent"
+                  checked={regTermsAccepted}
+                  onChange={e => setRegTermsAccepted(e.target.checked)}
+                  style={{ marginTop: 3, cursor: 'pointer', accentColor: 'var(--accent-teal)' }}
+                />
+                <label htmlFor="lgpdConsent" style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', cursor: 'pointer', lineHeight: 1.3 }}>
+                  Concordo com a proteção de dados LGPD e autorizo o processamento biométrico seguro e criptografado para o Face ID no meflagrou.com.
+                </label>
+              </div>
+
               {regError && (
-                <div style={{ fontSize: '0.75rem', color: '#ff0055', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <AlertCircle size={14} /> {regError}
+                <div style={{
+                  fontSize: '0.78rem',
+                  color: '#ff3366',
+                  background: 'rgba(255, 51, 102, 0.12)',
+                  border: '1px solid rgba(255, 51, 102, 0.35)',
+                  padding: '10px 12px',
+                  borderRadius: 10,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  fontWeight: 600
+                }}>
+                  <AlertCircle size={16} /> {regError}
                 </div>
               )}
 
@@ -1111,9 +1327,9 @@ export const AuthGatekeeperPage: React.FC<AuthGatekeeperPageProps> = ({
                 style={{
                   background: 'linear-gradient(135deg, #00f0ff, #00f5d4)',
                   color: '#07080c',
-                  padding: '11px',
+                  padding: '12px',
                   fontWeight: 900,
-                  fontSize: '0.85rem',
+                  fontSize: '0.88rem',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -1121,10 +1337,10 @@ export const AuthGatekeeperPage: React.FC<AuthGatekeeperPageProps> = ({
                   marginTop: 6
                 }}
               >
-                {isLoading ? 'Validando...' : (
+                {isLoading ? 'Validando e Criptografando...' : (
                   <>
-                    <span>Continuar para Ativação 2FA</span>
-                    <ArrowRight size={15} />
+                    <span>Concluir Cadastro e Ativar 2FA</span>
+                    <ArrowRight size={16} />
                   </>
                 )}
               </button>

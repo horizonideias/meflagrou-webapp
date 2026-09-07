@@ -19,7 +19,13 @@ import {
 import confetti from 'canvas-confetti';
 import type { UserProfile } from '../types';
 import { enrollNewUserFace, soundFx } from '../services/biometricService';
-import { validateRegistrationForm, sanitizeInput, formatWhatsAppPhone } from '../utils/securityUtils';
+import { MOCK_USERS } from '../data/mockDatabase';
+import { 
+  validateRegistrationForm, 
+  sanitizeInput, 
+  formatWhatsAppPhone, 
+  formatCPF 
+} from '../utils/securityUtils';
 import { InstagramIcon } from './Icons';
 
 interface NewEnrollmentModalProps {
@@ -56,15 +62,12 @@ export const NewEnrollmentModal: React.FC<NewEnrollmentModalProps> = ({
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let v = e.target.value.replace(/\D/g, '');
     if (v.length > 11) v = v.slice(0, 11);
-    
-    if (v.length > 9) {
-      v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
-    } else if (v.length > 6) {
-      v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
-    } else if (v.length > 3) {
-      v = v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
-    }
-    setCpf(v);
+    setCpf(formatCPF(v));
+  };
+
+  // Mask WhatsApp input ((XX) 9XXXX-XXXX)
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setWhatsapp(formatWhatsAppPhone(e.target.value));
   };
 
   // Live Camera Stream
@@ -143,6 +146,7 @@ export const NewEnrollmentModal: React.FC<NewEnrollmentModalProps> = ({
     e.preventDefault();
     setErrorMessage(null);
 
+    // 🔒 Strict Multi-Field Validation & Uniqueness Verification
     const validation = validateRegistrationForm({
       name,
       cpf,
@@ -150,11 +154,12 @@ export const NewEnrollmentModal: React.FC<NewEnrollmentModalProps> = ({
       email1,
       email2,
       photoDataUrl,
+      existingUsers: MOCK_USERS,
     });
 
     if (!validation.isValid) {
       setErrorMessage(validation.error || 'Verifique os dados informados.');
-      soundFx.playRadarTick();
+      soundFx.playErrorBuzz();
       return;
     }
 
@@ -167,32 +172,38 @@ export const NewEnrollmentModal: React.FC<NewEnrollmentModalProps> = ({
       soundFx.playRadarTick();
 
       setTimeout(() => {
-        setStepMessage('Vinculando acervo e ativando perfil com sucesso...');
-        soundFx.playUnlockSuccess();
+        try {
+          const newUser = enrollNewUserFace({
+            name: sanitizeInput(name),
+            cpf: cpf.trim(),
+            whatsapp: whatsapp.trim(),
+            address: sanitizeInput(address),
+            email1: sanitizeInput(email1).toLowerCase(),
+            email2: sanitizeInput(email2).toLowerCase(),
+            handle: sanitizeInput(handle) || sanitizeInput(name).toLowerCase().replace(/\s+/g, '_'),
+            city: sanitizeInput(city) || 'São Paulo, SP',
+            avatarDataUrl: photoDataUrl || '',
+          });
 
-        const newUser = enrollNewUserFace({
-          name: sanitizeInput(name),
-          cpf: cpf.trim(),
-          whatsapp: whatsapp.trim(),
-          address: sanitizeInput(address),
-          email1: sanitizeInput(email1).toLowerCase(),
-          email2: sanitizeInput(email2).toLowerCase(),
-          handle: sanitizeInput(handle) || sanitizeInput(name).toLowerCase().replace(/\s+/g, '_'),
-          city: sanitizeInput(city) || 'São Paulo, SP',
-          avatarDataUrl: photoDataUrl || '',
-        });
+          setStepMessage('Vinculando acervo e ativando perfil com sucesso...');
+          soundFx.playUnlockSuccess();
 
-        confetti({
-          particleCount: 120,
-          spread: 80,
-          origin: { y: 0.6 },
-          colors: ['#25d366', '#00f5d4', '#ff007a', '#ffb703'],
-        });
+          confetti({
+            particleCount: 120,
+            spread: 80,
+            origin: { y: 0.6 },
+            colors: ['#25d366', '#00f5d4', '#ff007a', '#ffb703'],
+          });
 
-        setTimeout(() => {
+          setTimeout(() => {
+            setIsProcessing(false);
+            onEnrollmentComplete(newUser);
+          }, 1200);
+        } catch (err: any) {
           setIsProcessing(false);
-          onEnrollmentComplete(newUser);
-        }, 1200);
+          setErrorMessage(err.message || 'Dados cadastrais já vinculados a outra conta.');
+          soundFx.playErrorBuzz();
+        }
       }, 1000);
     }, 1000);
   };
@@ -331,7 +342,7 @@ export const NewEnrollmentModal: React.FC<NewEnrollmentModalProps> = ({
                 type="tel"
                 placeholder="(11) 98888-7777"
                 value={whatsapp}
-                onChange={(e) => setWhatsapp(formatWhatsAppPhone(e.target.value))}
+                onChange={handlePhoneChange}
                 className="input-base"
                 style={{
                   background: 'rgba(255, 255, 255, 0.05)',

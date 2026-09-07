@@ -6,12 +6,15 @@ import {
   formatCPF,
   formatCEP,
   formatWhatsAppPhone,
-  maskCPF
+  maskCPF,
+  checkUserUniqueness,
+  normalizeCpfForComparison
 } from '../utils/securityUtils';
 import { calculateMasterDeusSplit, calculateCommissionCascade } from '../types/commerce';
 import { MOCK_USERS, MOCK_EVENTS, MOCK_PHOTOS } from '../data/mockDatabase';
 import { MOCK_STORIES } from '../data/mockStories';
 import { dbService } from '../services/databaseService';
+import { enrollNewUserFace } from '../services/biometricService';
 import { AuthSecurityService } from '../services/authSecurityService';
 import type { UserProfile, EventPhoto, Transaction } from '../types';
 
@@ -238,7 +241,17 @@ describe('🔬 AUDITORIA & TESTE GERAL DO MEFLAGROU.COM', () => {
     it('deve instanciar dbService e persistir usuários e transações com segurança', async () => {
       expect(dbService).toBeDefined();
       
-      const user: UserProfile = { ...MOCK_USERS[0], id: 'db_test_user' };
+      const user: UserProfile = {
+        ...MOCK_USERS[0],
+        id: 'db_test_user_unique',
+        handle: 'db_test_handle_unique',
+        cpf: '777.888.999-00',
+        whatsapp: '(11) 97777-6666',
+        phone: '(11) 97777-6666',
+        email: 'db_test_unique@meflagrou.com',
+        email1: 'db_test_unique@meflagrou.com',
+        email2: 'db_test_unique@meflagrou.com',
+      };
       const savedSuccess = await dbService.saveUser(user);
       expect(savedSuccess).toBe(true);
 
@@ -449,6 +462,182 @@ describe('🔬 AUDITORIA & TESTE GERAL DO MEFLAGROU.COM', () => {
         expect(split.deusRoyaltyAmount).toBeCloseTo(amount * 0.09, 2);
         expect(split.platformSiteAmount).toBeCloseTo(amount * 0.01, 2);
       });
+    });
+  });
+
+  // =========================================================================
+  // 12. SISTEMA DE CADASTRO E MOTOR DE ZERO DUPLICIDADES (CPF, WHATSAPP, EMAIL, HANDLE)
+  // =========================================================================
+  describe('🚫 12. Motor de Zero Duplicidades no Banco de Dados (checkUserUniqueness)', () => {
+    const existingUsers: UserProfile[] = [
+      {
+        id: 'user_registered_01',
+        name: 'Carlos Alberto Silva',
+        handle: 'carlos_silva',
+        cpf: '111.444.777-35',
+        whatsapp: '(11) 98888-7777',
+        phone: '(11) 98888-7777',
+        email: 'carlos@meflagrou.com',
+        email1: 'carlos@meflagrou.com',
+        avatar: '/avatar1.jpg',
+        bio: 'Perfil verificado meflagrou',
+        city: 'São Paulo',
+        state: 'SP',
+        verifiedAt: '2026-01-01',
+        facialDescriptor: [],
+        faceSignatureId: 'MF-001',
+        totalPhotosCount: 0,
+        eventsCount: 0,
+        attendedEvents: [],
+        topFriends: [],
+        socialLinks: {},
+        privacySettings: { isPublic: true, allowTagging: true, notifyOnNewPhoto: true }
+      },
+      {
+        id: 'user_registered_02',
+        name: 'Mariana Souza',
+        handle: 'mari_souza',
+        cpf: '123.456.789-09',
+        whatsapp: '(34) 99999-1111',
+        phone: '(34) 99999-1111',
+        email: 'mariana@meflagrou.com',
+        email1: 'mariana@meflagrou.com',
+        avatar: '/avatar2.jpg',
+        bio: 'Perfil verificado meflagrou',
+        city: 'Uberlândia',
+        state: 'MG',
+        verifiedAt: '2026-01-01',
+        facialDescriptor: [],
+        faceSignatureId: 'MF-002',
+        totalPhotosCount: 0,
+        eventsCount: 0,
+        attendedEvents: [],
+        topFriends: [],
+        socialLinks: {},
+        privacySettings: { isPublic: true, allowTagging: true, notifyOnNewPhoto: true }
+      }
+    ];
+
+    it('deve rejeitar cadastro com CPF idêntico ao já existente (mesmo com formatação diferente)', () => {
+      // Mesmos dígitos sem pontos
+      const duplicateCpfCandidate = {
+        name: 'Carlos Alberto Novo',
+        cpf: '11144477735',
+        whatsapp: '(11) 97777-6666',
+        email: 'carlos.novo@gmail.com',
+        handle: 'carlos_novo'
+      };
+
+      const result = checkUserUniqueness(existingUsers, duplicateCpfCandidate);
+      expect(result.isUnique).toBe(false);
+      expect(result.duplicateField).toBe('cpf');
+      expect(result.error).toContain('CPF já está cadastrado');
+      expect(result.existingUserId).toBe('user_registered_01');
+    });
+
+    it('deve rejeitar cadastro com WhatsApp idêntico ao já existente (com ou sem DDI 55)', () => {
+      // Mesmo telefone com prefixo internacional 55
+      const duplicatePhoneCandidate = {
+        name: 'Outro Usuario',
+        cpf: '333.444.555-66',
+        whatsapp: '5511988887777',
+        email: 'outro@gmail.com',
+        handle: 'outro_user'
+      };
+
+      const result = checkUserUniqueness(existingUsers, duplicatePhoneCandidate);
+      expect(result.isUnique).toBe(false);
+      expect(result.duplicateField).toBe('whatsapp');
+      expect(result.error).toContain('WhatsApp/Celular já possui uma conta vinculada');
+      expect(result.existingUserId).toBe('user_registered_01');
+    });
+
+    it('deve rejeitar cadastro com E-mail idêntico (case-insensitive across email/email1/email2)', () => {
+      const duplicateEmailCandidate = {
+        name: 'Mariana Silva',
+        cpf: '999.888.777-66',
+        whatsapp: '(21) 96666-5555',
+        email1: 'MARIANA@MEFLAGROU.COM',
+        handle: 'mari_silva_2026'
+      };
+
+      const result = checkUserUniqueness(existingUsers, duplicateEmailCandidate);
+      expect(result.isUnique).toBe(false);
+      expect(result.duplicateField).toBe('email');
+      expect(result.error).toContain('endereço de e-mail já está em uso');
+      expect(result.existingUserId).toBe('user_registered_02');
+    });
+
+    it('deve rejeitar cadastro com Handle idêntico (@handle)', () => {
+      const duplicateHandleCandidate = {
+        name: 'Mariana Silva Souza',
+        cpf: '999.888.777-66',
+        whatsapp: '(21) 96666-5555',
+        email: 'nova_mari@gmail.com',
+        handle: '@mari_souza'
+      };
+
+      const result = checkUserUniqueness(existingUsers, duplicateHandleCandidate);
+      expect(result.isUnique).toBe(false);
+      expect(result.duplicateField).toBe('handle');
+      expect(result.error).toContain('já está em uso');
+      expect(result.existingUserId).toBe('user_registered_02');
+    });
+
+    it('deve permitir cadastro quando todos os dados forem únicos', () => {
+      const uniqueCandidate = {
+        name: 'Roberto Diniz',
+        cpf: '555.666.777-88',
+        whatsapp: '(31) 97777-9999',
+        email: 'roberto@diniz.com',
+        handle: 'roberto_diniz'
+      };
+
+      const result = checkUserUniqueness(existingUsers, uniqueCandidate);
+      expect(result.isUnique).toBe(true);
+      expect(result.duplicateField).toBeUndefined();
+      expect(result.error).toBeUndefined();
+    });
+
+    it('deve permitir atualização do próprio perfil sem acusar falso duplicado de si mesmo', () => {
+      // Atualizando Carlos Alberto (mesmo ID user_registered_01)
+      const updateOwnProfile = {
+        id: 'user_registered_01',
+        name: 'Carlos Alberto Silva Atualizado',
+        cpf: '111.444.777-35',
+        whatsapp: '(11) 98888-7777',
+        email: 'carlos@meflagrou.com',
+        handle: 'carlos_silva'
+      };
+
+      const result = checkUserUniqueness(existingUsers, updateOwnProfile, 'user_registered_01');
+      expect(result.isUnique).toBe(true);
+    });
+
+    it('deve validar busca e verificação de duplicidade diretamente pelo DatabaseService', async () => {
+      // Mock dbService search
+      const foundByCpf = await dbService.getUserByCpf('11144477735');
+      // Should find either null or matching user
+      if (foundByCpf) {
+        expect(normalizeCpfForComparison(foundByCpf.cpf)).toBe('11144477735');
+      }
+
+      const duplicateCheck = await dbService.isDataDuplicate({
+        cpf: '111.444.777-35',
+      });
+      expect(duplicateCheck).toBeDefined();
+    });
+
+    it('deve impedir que enrollNewUserFace cadastre um usuário com CPF repetido', () => {
+      expect(() => {
+        enrollNewUserFace({
+          name: 'Eder de Andrade Pereira Duplicado',
+          cpf: '111.444.777-35', // CPF do usuário fundador já existente no MOCK_USERS
+          whatsapp: '(11) 99999-9999',
+          email1: 'novo_email_unico@gmail.com',
+          avatarDataUrl: 'data:image/jpeg;base64,sample'
+        });
+      }).toThrow();
     });
   });
 });

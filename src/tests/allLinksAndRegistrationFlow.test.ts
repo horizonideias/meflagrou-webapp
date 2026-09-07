@@ -87,7 +87,8 @@ describe('🧪 Complete Online System Test: All Links, Registrations, Modals & W
     it('deve cadastrar novo usuário VIP com biometria facial e sessão persistida', () => {
       const newUser = enrollNewUserFace({
         name: 'Carlos VIP Tester',
-        cpf: '111.444.777-35',
+        cpf: '123.456.789-09',
+        whatsapp: '(34) 98888-2222',
         handle: 'carlos_vip',
         city: 'Patrocínio, MG',
         avatarDataUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
