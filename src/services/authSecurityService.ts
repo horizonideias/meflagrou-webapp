@@ -7,6 +7,7 @@
  */
 
 import type { UserProfile, UserSecuritySettings } from '../types';
+import { WhatsAppGatewayService } from './whatsappGatewayService';
 
 export interface TwoFactorChallenge {
   code: string;
@@ -84,9 +85,9 @@ export class AuthSecurityService {
   }
 
   /**
-   * Generates a 6-digit WhatsApp 2FA OTP Challenge
+   * Generates a 6-digit WhatsApp 2FA OTP Challenge and sends real WhatsApp message via Evolution API
    */
-  static generate2FAChallenge(phone: string): TwoFactorChallenge {
+  static generate2FAChallenge(phone: string, userName?: string): TwoFactorChallenge {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const challenge: TwoFactorChallenge = {
       code,
@@ -100,6 +101,9 @@ export class AuthSecurityService {
     } catch {
       // fallback
     }
+
+    // Trigger real WhatsApp message dispatch via Evolution API
+    WhatsAppGatewayService.send2FACode(phone, code, userName).catch(console.error);
 
     return challenge;
   }
