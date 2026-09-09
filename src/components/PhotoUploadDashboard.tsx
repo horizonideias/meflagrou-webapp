@@ -261,7 +261,11 @@ export const PhotoUploadDashboard: React.FC<PhotoUploadDashboardProps> = ({
           // Redireciona imediatamente fechando o modal para abrir a galeria
           setTimeout(() => {
             onClose();
-          }, 700);
+            const galleryTarget = document.getElementById('profile-gallery-section') || document.getElementById('user-photos-grid') || document.querySelector('.profile-unified-photos-grid');
+            if (galleryTarget) {
+              galleryTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }, 600);
         }, 800);
       }, 700);
     }, 700);
@@ -345,7 +349,7 @@ export const PhotoUploadDashboard: React.FC<PhotoUploadDashboardProps> = ({
                 className="btn-primary summary-btn-feed"
               >
                 <Eye size={17} />
-                <span>Ver Flagras no Feed</span>
+                <span>Ver Flagras na Galeria</span>
                 <ArrowRight size={17} />
               </button>
 

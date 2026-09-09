@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   QrCode, 
@@ -10,11 +10,14 @@ import {
   Sparkles, 
   Clock,
   TrendingUp,
-  Flame
+  Flame,
+  MessageSquare,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useCart } from '../context/CartContext';
 import { soundFx } from '../services/biometricService';
+import { pixGatewayService, type PixTransaction } from '../services/pixGatewayService';
+import { whatsappGatewayService } from '../services/whatsappGatewayService';
 import type { UserProfile } from '../types';
 
 interface CheckoutModalProps {
@@ -29,6 +32,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [copiedPix, setCopiedPix] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [pixTx, setPixTx] = useState<PixTransaction | null>(null);
+  const [waSentStatus, setWaSentStatus] = useState<string>('');
 
   // Credit Card Form
   const [cardNumber, setCardNumber] = useState<string>('•••• •••• •••• 4242');
@@ -37,19 +42,28 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [cardCvv, setCardCvv] = useState<string>('888');
   const [installments, setInstallments] = useState<string>('1');
 
-  if (!isCheckoutOpen) return null;
-
   const totalAmount = activeCheckoutItems.reduce((acc, item) => acc + item.price, 0);
   const nextResaleTotal = totalAmount * 2;
-  const pixCode = `00020126580014br.gov.bcb.pix0136meflagrou-${Date.now()}-checkout520400005303986540${totalAmount.toFixed(2)}5802BR5916MEFLAGROU STUDIO6009SAO PAULO62070503***6304`;
+
+  // Generate dynamic Pix Transaction whenever checkout is opened or items change
+  useEffect(() => {
+    if (isCheckoutOpen && totalAmount > 0) {
+      const tx = pixGatewayService.createDynamicPixTransaction(totalAmount);
+      setPixTx(tx);
+      setWaSentStatus('');
+    }
+  }, [isCheckoutOpen, totalAmount]);
+
+  if (!isCheckoutOpen) return null;
 
   const handleCopyPix = () => {
-    navigator.clipboard.writeText(pixCode);
+    if (!pixTx) return;
+    navigator.clipboard.writeText(pixTx.payload);
     setCopiedPix(true);
     setTimeout(() => setCopiedPix(false), 3000);
   };
 
-  const handleExecutePayment = () => {
+  const handleExecutePayment = async () => {
     setIsProcessing(true);
 
     const buyerUser: UserProfile = currentUser || {
@@ -71,7 +85,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       privacySettings: { isPublic: true, allowTagging: true, notifyOnNewPhoto: true },
     };
 
-    setTimeout(() => {
+    setTimeout(async () => {
       completePurchase(paymentMethod, buyerUser);
       setIsProcessing(false);
       setIsSuccess(true);
@@ -83,7 +97,24 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         origin: { y: 0.5 },
         colors: ['#00f5d4', '#00e5ff', '#ff007a', '#ffbe0b'],
       });
-    }, 1500);
+
+      // Send automated WhatsApp confirmation with high-res download links
+      const buyerPhone = buyerUser.whatsapp || buyerUser.phone;
+      if (buyerPhone) {
+        const orderId = pixTx?.txid || `MF${Date.now().toString().slice(-6)}`;
+        const res = await whatsappGatewayService.sendPurchaseConfirmation(
+          buyerPhone,
+          orderId,
+          activeCheckoutItems.length,
+          totalAmount,
+          'https://horizonideias9servidor-meflagrou.rkrxgo.easypanel.host/#vault',
+          buyerUser.name
+        );
+        if (res.success) {
+          setWaSentStatus('Comprovante e fotos 8K enviados no seu WhatsApp!');
+        }
+      }
+    }, 1200);
   };
 
   return (
@@ -125,9 +156,27 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800, marginBottom: 4 }}>
               Pagamento Confirmado! 🎉
             </h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', maxWidth: 440, margin: '0 auto 16px auto' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', maxWidth: 440, margin: '0 auto 12px auto' }}>
               Seus flagras foram liberados em Ultra HD Clean (sem marca d'água) e transferidos para sua galeria.
             </p>
+
+            {/* WhatsApp delivery notification pill */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              background: 'rgba(37, 211, 102, 0.15)',
+              border: '1px solid rgba(37, 211, 102, 0.4)',
+              borderRadius: 20,
+              padding: '6px 14px',
+              fontSize: '0.78rem',
+              color: '#25d366',
+              fontWeight: 700,
+              marginBottom: 18
+            }}>
+              <MessageSquare size={14} />
+              {waSentStatus || 'Fotos originais 8K enviadas para seu WhatsApp cadastrado'}
+            </div>
 
             {/* Progressive 2x Resale Highlight Box */}
             <div style={{
@@ -282,7 +331,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 }}
               >
                 <QrCode size={15} />
-                PIX
+                PIX Dinâmico
               </button>
 
               <button
@@ -327,35 +376,57 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               </button>
             </div>
 
-            {/* TAB 1: PIX Flow */}
+            {/* TAB 1: PIX Flow with Dynamic QR Code & Split */}
             {paymentMethod === 'pix' && (
               <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
                 <div style={{
-                  padding: 14,
+                  padding: 12,
                   background: '#ffffff',
                   borderRadius: 16,
                   display: 'inline-block',
                   boxShadow: '0 8px 25px rgba(0, 245, 212, 0.3)'
                 }}>
-                  <div style={{
-                    width: 170,
-                    height: 170,
-                    background: 'radial-gradient(circle, #07080c 20%, transparent 20%), radial-gradient(circle, #07080c 20%, transparent 20%)',
-                    backgroundSize: '16px 16px',
-                    backgroundColor: '#ffffff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: 8,
-                    border: '2px solid #000'
-                  }}>
-                    <QrCode size={130} color="#07080c" />
-                  </div>
+                  {pixTx?.qrCodeUrl ? (
+                    <img 
+                      src={pixTx.qrCodeUrl} 
+                      alt="QR Code Pix"
+                      style={{ width: 170, height: 170, display: 'block', borderRadius: 8 }} 
+                    />
+                  ) : (
+                    <div style={{
+                      width: 170,
+                      height: 170,
+                      backgroundColor: '#ffffff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: 8,
+                    }}>
+                      <QrCode size={130} color="#07080c" />
+                    </div>
+                  )}
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: '#ffb703' }}>
                   <Clock size={14} />
-                  PIX expira em 14:59 min
+                  PIX expira em 14:59 min • txid: {pixTx?.txid || 'MF-ONLINE'}
+                </div>
+
+                {/* 90/9/1 Split Transparency Tag */}
+                <div style={{
+                  width: '100%',
+                  background: 'rgba(0, 245, 212, 0.06)',
+                  border: '1px solid rgba(0, 245, 212, 0.2)',
+                  borderRadius: 10,
+                  padding: '8px 12px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: '0.72rem',
+                  color: 'var(--text-secondary)'
+                }}>
+                  <span>📷 Fotógrafo (90%): <strong style={{ color: '#ffffff' }}>R$ {(totalAmount * 0.9).toFixed(2)}</strong></span>
+                  <span>⚡ Plataforma (9%): <strong style={{ color: '#ffffff' }}>R$ {(totalAmount * 0.09).toFixed(2)}</strong></span>
+                  <span>🌱 Social (1%): <strong style={{ color: '#ffffff' }}>R$ {(totalAmount * 0.01).toFixed(2)}</strong></span>
                 </div>
 
                 <button
@@ -378,7 +449,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     background: 'linear-gradient(135deg, #00f5d4, #00b4d8)'
                   }}
                 >
-                  {isProcessing ? 'Verificando Pagamento PIX...' : 'Simular Pagamento Confirmado'}
+                  {isProcessing ? 'Confirmando Pagamento com Banco...' : 'Simular Confirmação Instantânea'}
                 </button>
               </div>
             )}

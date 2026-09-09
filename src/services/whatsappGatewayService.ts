@@ -1,9 +1,10 @@
 /**
- * 📲 EVOLUTION API - WHATSAPP GATEWAY SERVICE
- * Envio real de mensagens de autenticação e códigos 2FA via Evolution API no VPS.
+ * 📲 EVOLUTION API - WHATSAPP OMNICHANNEL GATEWAY SERVICE
+ * Envio real de mensagens de autenticação 2FA, alertas de novos flagras,
+ * entrega de fotos em 8K pós-PIX e recuperação de carrinho via Evolution API no VPS.
  */
 
-export interface SendOtpResult {
+export interface SendMessageResult {
   success: boolean;
   messageId?: string;
   error?: string;
@@ -29,7 +30,7 @@ export class WhatsAppGatewayService {
   /**
    * Sends 2FA OTP Code via WhatsApp using Evolution API
    */
-  static async send2FACode(phone: string, otpCode: string, userName?: string): Promise<SendOtpResult> {
+  static async send2FACode(phone: string, otpCode: string, userName?: string): Promise<SendMessageResult> {
     const formattedNumber = this.formatToWhatsAppJid(phone);
     const firstName = userName ? userName.split(' ')[0] : 'Usuário';
 
@@ -45,6 +46,103 @@ export class WhatsAppGatewayService {
       '⚠️ _Não compartilhe este código com ninguém._'
     ].join('\n');
 
+    return this.postTextMessage(formattedNumber, messageText);
+  }
+
+  /**
+   * 📸 Sends instant Flagra alert when AI finds user's face in a new event album
+   */
+  static async sendFlagraAlertNotification(
+    phone: string,
+    eventName: string,
+    photoCount: number,
+    photographerName: string,
+    galleryUrl: string = 'https://horizonideias9servidor-meflagrou.rkrxgo.easypanel.host/',
+    userName?: string
+  ): Promise<SendMessageResult> {
+    const formattedNumber = this.formatToWhatsAppJid(phone);
+    const firstName = userName ? userName.split(' ')[0] : 'Parceiro';
+
+    const messageText = [
+      '📸 *MEFLAGROU* • *VOCÊ FOI FLAGRADO!* ✨',
+      '',
+      `Fala, *${firstName}*! Nossa IA biométrica facial acaba de encontrar *(${photoCount}) fotos suas* no evento:`,
+      `🎪 *${eventName}*`,
+      `📷 Fotógrafo: *${photographerName}*`,
+      '',
+      '🔥 Suas fotos em Ultra HD 8K já estão prontas no seu perfil exclusivo.',
+      '',
+      `👉 *Toque para ver suas fotos:* ${galleryUrl}`,
+      '',
+      '⚡ _Garanta antes que o lote mude de preço!_'
+    ].join('\n');
+
+    return this.postTextMessage(formattedNumber, messageText);
+  }
+
+  /**
+   * 💎 Sends purchase confirmation and 8K original high-res download link
+   */
+  static async sendPurchaseConfirmation(
+    phone: string,
+    orderId: string,
+    photoCount: number,
+    totalPaid: number,
+    downloadUrl: string = 'https://horizonideias9servidor-meflagrou.rkrxgo.easypanel.host/#vault',
+    userName?: string
+  ): Promise<SendMessageResult> {
+    const formattedNumber = this.formatToWhatsAppJid(phone);
+    const firstName = userName ? userName.split(' ')[0] : 'Cliente VIP';
+
+    const messageText = [
+      '🎉 *MEFLAGROU* • *PAGAMENTO PIX CONFIRMADO!* 💎',
+      '',
+      `Obrigado pela compra, *${firstName}*!`,
+      `🧾 Pedido: *#${orderId}*`,
+      `📸 Total de Fotos: *${photoCount} fotos sem marca d'água*`,
+      `💰 Valor Pago: *R$ ${totalPaid.toFixed(2)}*`,
+      '',
+      '⬇️ *Download Imediato em Resolução Máxima (8K):*',
+      `${downloadUrl}`,
+      '',
+      '🔐 _Suas fotos também ficam salvas para sempre no seu Cofre VIP._'
+    ].join('\n');
+
+    return this.postTextMessage(formattedNumber, messageText);
+  }
+
+  /**
+   * 🛒 Sends cart abandonment reminder with exclusive coupon
+   */
+  static async sendCartAbandonmentReminder(
+    phone: string,
+    itemCount: number,
+    couponCode: string = 'FLAGRA10',
+    checkoutUrl: string = 'https://horizonideias9servidor-meflagrou.rkrxgo.easypanel.host/#cart',
+    userName?: string
+  ): Promise<SendMessageResult> {
+    const formattedNumber = this.formatToWhatsAppJid(phone);
+    const firstName = userName ? userName.split(' ')[0] : 'Amigo(a)';
+
+    const messageText = [
+      '👀 *MEFLAGROU* • *Suas fotos estão te esperando!*',
+      '',
+      `Ei, *${firstName}*! Você deixou *${itemCount} fotos incríveis* no seu carrinho.`,
+      '',
+      `🎁 Liberamos um cupom especial de *10% OFF*: *${couponCode}*`,
+      '',
+      `👉 *Finalizar com desconto:* ${checkoutUrl}`,
+      '',
+      '⏳ _Válido somente nas próximas 2 horas._'
+    ].join('\n');
+
+    return this.postTextMessage(formattedNumber, messageText);
+  }
+
+  /**
+   * Internal helper to POST text messages to Evolution API
+   */
+  private static async postTextMessage(number: string, text: string): Promise<SendMessageResult> {
     try {
       const response = await fetch(`${this.API_BASE_URL}/message/sendText/${this.INSTANCE_NAME}`, {
         method: 'POST',
@@ -53,8 +151,8 @@ export class WhatsAppGatewayService {
           'apikey': this.API_KEY,
         },
         body: JSON.stringify({
-          number: formattedNumber,
-          text: messageText,
+          number,
+          text,
           options: {
             delay: 1000,
             presence: 'composing',

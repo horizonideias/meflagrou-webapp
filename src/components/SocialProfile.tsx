@@ -788,7 +788,7 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
       </section>
 
       {/* 6. Categorias e Filtros da Galeria */}
-      <nav className="profile-gallery-filter-navbar">
+      <nav className="profile-gallery-filter-navbar" id="profile-gallery-section">
         {/* Main Category Tabs */}
         <div className="gallery-main-tabs-row no-scrollbar">
           <button
@@ -876,7 +876,7 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
           </button>
         </div>
       ) : (
-        <div className="profile-unified-photos-grid">
+        <div className="profile-unified-photos-grid" id="user-photos-grid">
           {filteredPhotos.map((photo) => {
             const purchased = isPhotoPurchased(photo.id);
 
@@ -1006,8 +1006,19 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
           currentUser={user}
           isOpen={isClientUploadOpen}
           onClose={() => setIsClientUploadOpen(false)}
-          onPhotosPublished={() => {
+          onPhotosPublished={(photos) => {
             setIsClientUploadOpen(false);
+            setSelectedFilter('all');
+            setSelectedEventId('all');
+            setToastMessage(`📸 ${photos.length} flagra(s) adicionado(s) à sua galeria!`);
+            setCopiedToast(true);
+            setTimeout(() => setCopiedToast(false), 4500);
+            setTimeout(() => {
+              const el = document.getElementById('profile-gallery-section') || document.getElementById('user-photos-grid');
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }, 300);
           }}
         />
       )}

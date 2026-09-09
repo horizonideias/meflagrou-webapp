@@ -1,18 +1,42 @@
 {
-  "name": "meflagrou.com - Reconhecimento Facial & Flagras VIP",
-  "short_name": "meflagrou",
-  "description": "Portal inteligente de fotos de festas e festivais com reconhecimento facial e compra instantânea.",
+  "name": "MeFlagrou - Reconhecimento Facial & Flagras VIP",
+  "short_name": "MeFlagrou",
+  "description": "Portal inteligente de fotos de eventos com IA biométrica facial 3D, compra instantânea via PIX e download em 8K.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#07080c",
   "theme_color": "#00f5d4",
   "orientation": "portrait",
+  "categories": ["photography", "entertainment", "social"],
   "icons": [
     {
       "src": "/favicon.svg",
       "sizes": "192x192 512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Scanner Facial 3D",
+      "short_name": "Scanner",
+      "description": "Buscar minhas fotos com IA biométrica",
+      "url": "/#scan",
+      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Meus Flagras VIP",
+      "short_name": "Flagras",
+      "description": "Ver fotos desbloqueadas",
+      "url": "/#vault",
+      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
     }
   ]
 }

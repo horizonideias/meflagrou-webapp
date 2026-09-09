@@ -548,9 +548,16 @@ export const InstagramApp: React.FC = () => {
           onClose={() => setIsPhotographerUploadOpen(false)}
           onPhotosPublished={(photos) => {
             setIsPhotographerUploadOpen(false);
-            handleSelectUser(currentUser);
-            setUploadSuccessToast(`📸 ${photos.length} flagras publicados com sucesso no seu perfil!`);
-            setTimeout(() => setUploadSuccessToast(null), 4000);
+            setCurrentUser(currentUser);
+            setActiveTab('profile');
+            setUploadSuccessToast(`📸 ${photos.length} flagras adicionados com sucesso à sua galeria!`);
+            setTimeout(() => {
+              const galleryEl = document.getElementById('profile-gallery-section') || document.getElementById('user-photos-grid') || document.querySelector('.profile-unified-photos-grid');
+              if (galleryEl) {
+                galleryEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }, 350);
+            setTimeout(() => setUploadSuccessToast(null), 4500);
           }}
         />
       )}

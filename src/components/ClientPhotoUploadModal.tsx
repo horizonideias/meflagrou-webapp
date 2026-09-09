@@ -126,6 +126,12 @@ export const ClientPhotoUploadModal: React.FC<ClientPhotoUploadModalProps> = ({
 
   const handleFinish = () => {
     onClose();
+    setTimeout(() => {
+      const galleryEl = document.getElementById('profile-gallery-section') || document.getElementById('user-photos-grid') || document.querySelector('.profile-unified-photos-grid');
+      if (galleryEl) {
+        galleryEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 300);
   };
 
   const handlePublishAnother = () => {
