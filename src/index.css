@@ -12198,3 +12198,900 @@ canvas,
   }
 }
 
+/* ========================================================================= */
+/* 🌌 SISTEMA MODAL 3D EM TELA CHEIA (MEFLAGROU 3D SPATIAL ENGINE) */
+/* ========================================================================= */
+
+.modal-3d-fullscreen-viewport {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999999;
+  background: #050608;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  perspective: 1200px;
+  animation: modal3dFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+@keyframes modal3dFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 1. Palco Espacial 3D */
+.modal-3d-stage-container {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+  perspective: 1200px;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.modal-3d-stage-container:active {
+  cursor: grabbing;
+}
+
+.modal-3d-ambient-glow {
+  position: absolute;
+  inset: -25%;
+  pointer-events: none;
+  opacity: 0.65;
+  filter: blur(80px);
+  z-index: 1;
+  transition: background 0.4s ease;
+}
+
+/* 🌀 MODO 1: COVERFLOW 3D */
+.coverflow-3d-track {
+  position: relative;
+  width: 100%;
+  height: 72vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+}
+
+.coverflow-3d-card {
+  position: absolute;
+  width: 350px;
+  max-width: 82vw;
+  height: 490px;
+  max-height: 66vh;
+  border-radius: 22px;
+  overflow: visible;
+  cursor: pointer;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease, filter 0.3s ease;
+  transform-style: preserve-3d;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 25px rgba(0, 245, 212, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: #0c0e17;
+}
+
+.coverflow-3d-card.active-center {
+  border: 2px solid var(--accent-teal);
+  box-shadow: 0 30px 85px rgba(0, 0, 0, 0.95), 0 0 50px rgba(0, 245, 212, 0.4);
+  cursor: default;
+}
+
+.coverflow-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 20px;
+  display: block;
+  pointer-events: none;
+}
+
+/* Reflexo Espelhado Holográfico no Chão */
+.photo-3d-floor-reflection {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  height: 120px;
+  overflow: hidden;
+  transform: scaleY(-1);
+  opacity: 0.28;
+  filter: blur(1.5px);
+  mask-image: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 80%);
+  -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 80%);
+  pointer-events: none;
+}
+
+.reflection-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 20px;
+}
+
+/* 🎭 MODO 2: CINEMA STAGE 3D */
+.cinema-3d-stage-wrapper {
+  position: relative;
+  width: auto;
+  max-width: 86vw;
+  height: 72vh;
+  max-height: 740px;
+  border-radius: 24px;
+  transform-style: preserve-3d;
+  transition: transform 0.12s ease-out;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.95), 0 0 60px rgba(0, 245, 212, 0.35);
+  border: 1.5px solid rgba(0, 245, 212, 0.45);
+  background: #08090f;
+}
+
+.cinema-stage-main-img {
+  width: auto;
+  max-width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 22px;
+  display: block;
+}
+
+.cinema-specular-light {
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  pointer-events: none;
+  z-index: 10;
+  mix-blend-mode: screen;
+  transition: background 0.15s ease-out;
+}
+
+/* 🎡 MODO 3: CILINDRO ORBITAL 3D */
+.cylinder-3d-carousel-scene {
+  position: relative;
+  width: 100%;
+  height: 72vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+  perspective: 1400px;
+}
+
+.cylinder-3d-ring {
+  position: relative;
+  width: 280px;
+  height: 420px;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cylinder-3d-panel {
+  position: absolute;
+  width: 230px;
+  height: 340px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.85);
+  cursor: pointer;
+  transition: transform 0.35s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  background: #0d0f1a;
+}
+
+.cylinder-3d-panel.active {
+  border: 2px solid var(--accent-teal);
+  box-shadow: 0 0 40px rgba(0, 245, 212, 0.5);
+  transform-origin: center center;
+}
+
+.cylinder-panel-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cylinder-panel-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 10px;
+  background: linear-gradient(to top, rgba(7, 8, 12, 0.95), transparent);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 🧱 MODO 4: MOSAICO ESPACIAL 3D */
+.grid-3d-matrix-scene {
+  width: 100%;
+  height: 74vh;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  perspective: 1300px;
+  transform-style: preserve-3d;
+  padding: 30px 20px;
+}
+
+.grid-3d-matrix-plane {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 24px;
+  width: 100%;
+  max-width: 1120px;
+  transform-style: preserve-3d;
+}
+
+.grid-3d-card {
+  position: relative;
+  height: 280px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.3s ease;
+  background: #0d0f1a;
+}
+
+.grid-3d-card:hover {
+  transform: translateZ(45px) scale(1.06);
+  border-color: var(--accent-teal);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(0, 245, 212, 0.4);
+  z-index: 50;
+}
+
+.grid-3d-card.active {
+  border: 2px solid var(--accent-teal);
+  box-shadow: 0 0 35px rgba(0, 245, 212, 0.45);
+}
+
+.grid-3d-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.grid-3d-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 14px 12px;
+  background: linear-gradient(to top, rgba(7, 8, 12, 0.95), transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.grid-3d-title {
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.grid-3d-sub {
+  color: var(--accent-teal);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+/* Setas Laterais de Navegação 3D */
+.modal-3d-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(15, 17, 24, 0.75);
+  border: 1px solid rgba(0, 245, 212, 0.35);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 245, 212, 0.2);
+  transition: all 0.25s ease;
+}
+
+.modal-3d-arrow:hover {
+  background: var(--accent-teal);
+  color: #07080c;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 0 30px rgba(0, 245, 212, 0.6);
+}
+
+.modal-3d-arrow.left {
+  left: 24px;
+}
+
+.modal-3d-arrow.right {
+  right: 24px;
+}
+
+@media (max-width: 768px) {
+  .modal-3d-arrow {
+    width: 40px;
+    height: 40px;
+  }
+  .modal-3d-arrow.left { left: 8px; }
+  .modal-3d-arrow.right { right: 8px; }
+}
+
+/* 🤖 HUD Biométrico 3D FaceMesh */
+.biometric-3d-facemesh-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  overflow: hidden;
+  z-index: 20;
+}
+
+.facemesh-scanner-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--accent-teal), #ffffff, var(--accent-teal), transparent);
+  box-shadow: 0 0 15px var(--accent-teal), 0 0 30px var(--accent-teal);
+  animation: faceMeshScanVertical 3.2s ease-in-out infinite alternate;
+}
+
+@keyframes faceMeshScanVertical {
+  0% { top: 4%; opacity: 0.2; }
+  50% { opacity: 0.9; }
+  100% { top: 94%; opacity: 0.2; }
+}
+
+.facemesh-3d-face-box {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+}
+
+.facemesh-wireframe-bracket {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--accent-teal);
+  box-shadow: 0 0 8px var(--accent-teal);
+}
+
+.facemesh-wireframe-bracket.top-left { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+.facemesh-wireframe-bracket.top-right { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+.facemesh-wireframe-bracket.bottom-left { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+.facemesh-wireframe-bracket.bottom-right { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+
+.facemesh-3d-points-matrix {
+  position: absolute;
+  inset: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: center;
+  justify-items: center;
+  opacity: 0.75;
+}
+
+.facemesh-mesh-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent-teal);
+  box-shadow: 0 0 6px var(--accent-teal);
+  animation: dotPulse 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes dotPulse {
+  0% { transform: scale(0.8); opacity: 0.4; }
+  100% { transform: scale(1.4); opacity: 1; }
+}
+
+.facemesh-3d-tag-badge {
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(7, 8, 12, 0.88);
+  border: 1px solid var(--accent-teal);
+  border-radius: 9999px;
+  padding: 2px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #ffffff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), 0 0 10px rgba(0, 245, 212, 0.3);
+}
+
+/* 2. Barra Superior 3D Flutuante */
+.modal-3d-top-bar {
+  position: absolute;
+  top: 14px;
+  left: 20px;
+  right: 20px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  background: rgba(12, 15, 24, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  z-index: 1000;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 245, 212, 0.15);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.modal-3d-top-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-3d-author-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid var(--accent-teal);
+  object-fit: cover;
+  box-shadow: 0 0 10px rgba(0, 245, 212, 0.3);
+}
+
+.modal-3d-meta-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-3d-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-3d-author-name {
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.modal-3d-badge-3d {
+  background: linear-gradient(135deg, rgba(0, 245, 212, 0.25), rgba(121, 40, 202, 0.25));
+  border: 1px solid var(--accent-teal);
+  border-radius: 6px;
+  padding: 1px 6px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--accent-teal);
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.6px;
+}
+
+.modal-3d-counter-pill {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+  padding: 1px 7px;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.modal-3d-event-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+}
+
+/* Modos 3D Switcher */
+.modal-3d-mode-switcher {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(7, 8, 12, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+  padding: 3px 4px;
+}
+
+.mode-3d-chip {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 5px 12px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-3d-chip:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.mode-3d-chip.active {
+  background: linear-gradient(135deg, var(--accent-teal), var(--accent-cyan));
+  color: #07080c;
+  font-weight: 800;
+  box-shadow: 0 0 14px rgba(0, 245, 212, 0.4);
+}
+
+.modal-3d-top-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-3d-icon-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-3d-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: var(--accent-teal);
+}
+
+.modal-3d-icon-btn.active-hud {
+  background: rgba(0, 245, 212, 0.18);
+  border-color: var(--accent-teal);
+  color: var(--accent-teal);
+}
+
+.modal-3d-icon-btn.active-play {
+  background: rgba(0, 245, 212, 0.22);
+  border-color: var(--accent-teal);
+  color: #ffffff;
+}
+
+.modal-3d-close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-3d-close-btn:hover {
+  background: #ff0055;
+  border-color: #ff0055;
+  color: #ffffff;
+  transform: rotate(90deg);
+}
+
+/* 3. Barra de Progresso Neon do Slideshow */
+.modal-3d-slideshow-progress-bar {
+  position: absolute;
+  top: 76px;
+  left: 20px;
+  right: 20px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.slideshow-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-teal), #ff007a);
+  box-shadow: 0 0 10px var(--accent-teal);
+  transition: width 0.05s linear;
+}
+
+/* 4. Barra Inferior 3D com Miniaturas */
+.modal-3d-bottom-bar {
+  position: absolute;
+  bottom: 14px;
+  left: 20px;
+  right: 20px;
+  background: rgba(12, 15, 24, 0.86);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 10px 18px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.7), 0 0 25px rgba(0, 245, 212, 0.12);
+}
+
+.modal-3d-thumbnails-ribbon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  perspective: 600px;
+}
+
+.ribbon-thumb-item {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0.55;
+  background: #090a10;
+}
+
+.ribbon-thumb-item:hover {
+  opacity: 0.9;
+  transform: translateY(-3px) scale(1.08);
+}
+
+.ribbon-thumb-item.selected {
+  opacity: 1;
+  border: 2px solid var(--accent-teal);
+  box-shadow: 0 0 15px rgba(0, 245, 212, 0.5);
+  transform: translateY(-4px) scale(1.12);
+}
+
+.ribbon-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ribbon-active-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent-teal);
+}
+
+.modal-3d-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.bottom-left-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 180px;
+}
+
+.info-title {
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.info-meta-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.info-chip {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.info-chip.highlight {
+  color: var(--accent-teal);
+  font-weight: 800;
+}
+
+.bottom-center-cta {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.modal-3d-buy-btn {
+  background: linear-gradient(135deg, var(--accent-teal), #00d2ff);
+  color: #07080c;
+  border: none;
+  border-radius: 9999px;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(0, 245, 212, 0.45);
+  transition: all 0.25s ease;
+}
+
+.modal-3d-buy-btn:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 30px rgba(0, 245, 212, 0.7);
+}
+
+.modal-3d-buy-btn.purchased {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.45);
+}
+
+.bottom-right-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-3d-tool-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-radius: 9999px;
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-3d-tool-pill:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: var(--accent-teal);
+}
+
+.modal-3d-tool-pill.liked {
+  color: #ff007a;
+  border-color: #ff007a;
+}
+
+.modal-3d-tool-pill.added {
+  color: #00f5d4;
+  border-color: #00f5d4;
+}
+
+.modal-3d-tool-pill.active {
+  background: rgba(0, 245, 212, 0.18);
+  border-color: var(--accent-teal);
+  color: var(--accent-teal);
+}
+
+.modal-3d-tool-pill.highlight-story {
+  color: var(--accent-magenta);
+  border-color: rgba(255, 0, 122, 0.4);
+}
+
+/* 🕶️ Botão Flutuante no Feed: Ver em 3D */
+.post-open-3d-fullscreen-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(7, 8, 12, 0.82);
+  border: 1px solid var(--accent-teal);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #ffffff;
+  padding: 6px 13px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  z-index: 15;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), 0 0 14px rgba(0, 245, 212, 0.35);
+  transition: all 0.25s ease;
+}
+
+.post-open-3d-fullscreen-btn:hover {
+  background: var(--accent-teal);
+  color: #07080c;
+  transform: scale(1.06);
+  box-shadow: 0 0 25px rgba(0, 245, 212, 0.65);
+}
+
+.post-open-3d-fullscreen-btn:hover span {
+  color: #07080c;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .modal-3d-top-bar {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    height: 50px;
+    padding: 0 10px;
+  }
+  .btn-label-desktop {
+    display: none;
+  }
+  .modal-3d-mode-switcher {
+    display: none; /* Em telas muito pequenas o menu é simplificado */
+  }
+  .modal-3d-bottom-bar {
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    padding: 8px 12px;
+  }
+  .bottom-left-info {
+    display: none;
+  }
+  .modal-3d-buy-btn {
+    padding: 8px 16px;
+    font-size: 0.78rem;
+  }
+  .modal-3d-tool-pill span {
+    display: none;
+  }
+  .modal-3d-tool-pill {
+    padding: 6px 8px;
+  }
+}

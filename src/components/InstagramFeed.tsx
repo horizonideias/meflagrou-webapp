@@ -13,7 +13,8 @@ import {
   Scan,
   Users,
   ArrowRight,
-  LayoutGrid
+  LayoutGrid,
+  Box
 } from 'lucide-react';
 import type { EventPhoto, UserProfile } from '../types';
 import { MOCK_USERS } from '../data/mockDatabase';
@@ -290,6 +291,23 @@ export const InstagramFeed: React.FC<InstagramFeedProps> = ({
 
           {/* Category Filter Chips Bar */}
           <div className="instagram-filter-chips no-scrollbar">
+            {/* 🕶️ Galeria 3D Fullscreen */}
+            <button
+              onClick={() => onOpenPhotoModal(filteredPhotos[0] || allPhotos[0])}
+              className="filter-chip"
+              style={{
+                background: 'linear-gradient(135deg, rgba(0, 245, 212, 0.28), rgba(121, 40, 202, 0.22))',
+                border: '1px solid var(--accent-teal)',
+                color: '#ffffff',
+                fontWeight: 900,
+                boxShadow: '0 0 16px rgba(0, 245, 212, 0.45)',
+              }}
+              title="Abrir Todas as Fotos no Sistema Modal 3D em Tela Cheia"
+            >
+              <Box size={13} color="var(--accent-teal)" />
+              <span>🕶️ Galeria 3D</span>
+            </button>
+
             {/* 🖼️ Mosaico em Tela Toda */}
             {onOpenFullscreenGrid && (
               <button

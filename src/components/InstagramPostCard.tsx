@@ -18,7 +18,8 @@ import {
   Radio,
   Gift,
   UserPlus,
-  CheckCircle2
+  CheckCircle2,
+  Box
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import type { EventPhoto, UserProfile } from '../types';
@@ -48,7 +49,7 @@ export const InstagramPostCard: React.FC<InstagramPostCardProps> = ({
   const { 
     cart, 
     addToCart, 
-    openCheckout,
+    openCheckout, 
     addPhotoToUserProfile,
     removePhotoFromUserProfile,
     isPhotoInUserProfile,
@@ -128,11 +129,14 @@ export const InstagramPostCard: React.FC<InstagramPostCardProps> = ({
     }
   };
 
-  // 👆👆 2 TOQUES / DUPLO CLIQUE PARA ABRIR A GALERIA EM TELA CHEIA
-  const lastTapTimeRef = useRef<number>(0);
+  // 👆 1 TOQUE OU CLIQUE PARA ABRIR A GALERIA 3D EM TELA CHEIA
   const touchStartXRef = useRef<number>(0);
   const touchStartYRef = useRef<number>(0);
-  const singleClickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleOpenModal3D = () => {
+    soundFx.playRadarTick();
+    onOpenPhotoModal(currentSlidePhoto);
+  };
 
   const handlePhotoDoubleTapOrClick = () => {
     soundFx.playRadarTick();
@@ -158,7 +162,7 @@ export const InstagramPostCard: React.FC<InstagramPostCardProps> = ({
     touchStartYRef.current = e.touches[0].clientY;
   };
 
-  // 👆 Touch End: Detecta Arraste Horizontal (Swipe) OU 1 Toque (Passar Foto) OU 2 Toques (Galeria)
+  // 👆 Touch End: Detecta Arraste Horizontal (Swipe) OU Toque (Abre 3D)
   const handleTouchEnd = (e: React.TouchEvent) => {
     const touchEndX = e.changedTouches[0].clientX;
     const touchEndY = e.changedTouches[0].clientY;
@@ -175,58 +179,22 @@ export const InstagramPostCard: React.FC<InstagramPostCardProps> = ({
       return;
     }
 
-    // 2. 👆 Toque rápido na tela
+    // 2. 👆 Toque na foto: Abre o Modal 3D em Tela Cheia
     if (Math.abs(diffX) < 15 && Math.abs(diffY) < 15) {
-      const now = Date.now();
-      const DOUBLE_TAP_GAP = 300;
-
-      if (now - lastTapTimeRef.current < DOUBLE_TAP_GAP) {
-        if (singleClickTimerRef.current) {
-          clearTimeout(singleClickTimerRef.current);
-          singleClickTimerRef.current = null;
-        }
-        handlePhotoDoubleTapOrClick();
-        lastTapTimeRef.current = 0;
-      } else {
-        lastTapTimeRef.current = now;
-        singleClickTimerRef.current = setTimeout(() => {
-          handleNextSlide();
-          singleClickTimerRef.current = null;
-        }, DOUBLE_TAP_GAP);
-      }
+      handleOpenModal3D();
     }
   };
 
-  // 🖱️ Desktop Click: 1 Clique passa foto (lado esquerdo = volta, lado direito = avança)
+  // 🖱️ Desktop Click: Clicar na foto abre imediatamente o Modal 3D em Tela Cheia
   const handleMediaClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if ((e.target as HTMLElement).closest('.carousel-arrow, .carousel-dot, .post-price-badge, .post-media-badge, .magnifier-toggle-pill, .face-detected-pin, .post-face-tag-toggle-btn')) {
+    if ((e.target as HTMLElement).closest('.carousel-arrow, .carousel-dot, .post-price-badge, .post-media-badge, .magnifier-toggle-pill, .face-detected-pin, .post-face-tag-toggle-btn, .post-open-3d-fullscreen-btn')) {
       return;
     }
 
-    const rect = e.currentTarget.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const isLeftHalf = clickX < rect.width * 0.35;
-
-    if (singleClickTimerRef.current) {
-      clearTimeout(singleClickTimerRef.current);
-      singleClickTimerRef.current = null;
-    }
-
-    singleClickTimerRef.current = setTimeout(() => {
-      if (isLeftHalf) {
-        handlePrevSlide();
-      } else {
-        handleNextSlide();
-      }
-      singleClickTimerRef.current = null;
-    }, 240);
+    handleOpenModal3D();
   };
 
   const handleMediaDoubleClick = () => {
-    if (singleClickTimerRef.current) {
-      clearTimeout(singleClickTimerRef.current);
-      singleClickTimerRef.current = null;
-    }
     handlePhotoDoubleTapOrClick();
   };
 
@@ -263,20 +231,25 @@ export const InstagramPostCard: React.FC<InstagramPostCardProps> = ({
     }
   };
 
-  // Buy Single Photo
+  // Buy or Download Handler
   const handleBuyOrDownload = () => {
     if (isPurchased) {
-      soundFx.playRadarTick();
-      alert('📥 Baixando foto em Ultra HD 8K sem marca d\'água!');
+      const link = document.createElement('a');
+      link.href = currentSlidePhoto.highResUrl || currentSlidePhoto.url;
+      link.target = '_blank';
+      link.download = `meflagrou_${currentSlidePhoto.eventName.toLowerCase().replace(/\s+/g, '_')}_${currentSlidePhoto.id}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } else {
       addToCart(currentSlidePhoto, 'single_hd');
       openCheckout();
     }
   };
 
-  // Buy Event Bundle
+  // Buy Full Event Bundle (R$ 39,90)
   const handleBuyBundle = () => {
-    addToCart(currentSlidePhoto, 'event_pack');
+    eventCarouselPhotos.forEach((p) => addToCart(p, 'single_hd'));
     openCheckout();
   };
 
@@ -365,7 +338,7 @@ export const InstagramPostCard: React.FC<InstagramPostCardProps> = ({
         <button
           onClick={() => onOpenPhotoModal(currentSlidePhoto)}
           className="post-options-btn"
-          title="Ver detalhes da foto"
+          title="Abrir em Tela Cheia 3D"
         >
           <MoreHorizontal size={18} />
         </button>
@@ -392,6 +365,21 @@ export const InstagramPostCard: React.FC<InstagramPostCardProps> = ({
             onSelectUser={onSelectUser}
           />
         </PhotoMagnifierLoupe>
+
+        {/* 🕶️ Botão Flutuante de Abertura 3D em Tela Cheia */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            soundFx.playRadarTick();
+            onOpenPhotoModal(currentSlidePhoto);
+          }}
+          className="post-open-3d-fullscreen-btn"
+          title="Abrir todas as fotos no Sistema Modal 3D em Tela Cheia"
+        >
+          <Box size={13} color="#00f5d4" />
+          <span>🕶️ Ver em 3D</span>
+        </button>
 
         {/* ◀️ ▶️ Setas de Navegação da Galeria no Feed */}
         {eventCarouselPhotos.length > 1 && (
@@ -540,11 +528,11 @@ export const InstagramPostCard: React.FC<InstagramPostCardProps> = ({
             />
           </button>
 
-          {/* Comment Bubble */}
+          {/* Comment Bubble / Modal 3D */}
           <button
             onClick={() => onOpenPhotoModal(currentSlidePhoto)}
             className="post-action-btn"
-            title="Ver e adicionar comentários"
+            title="Ver no Modal 3D e comentar"
           >
             <MessageCircle size={24} />
           </button>

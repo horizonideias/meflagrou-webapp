@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { 
   X, 
   ChevronLeft, 
@@ -8,9 +8,6 @@ import {
   MapPin, 
   Calendar, 
   Clock, 
-  ZoomIn, 
-  ZoomOut, 
-  RotateCcw, 
   Check, 
   Sparkles, 
   Volume2, 
@@ -26,7 +23,16 @@ import {
   UserPlus,
   Lock,
   Camera,
-  ShieldAlert
+  ShieldAlert,
+  Play,
+  Pause,
+  Maximize2,
+  Minimize2,
+  Box,
+  Layers,
+  Disc,
+  LayoutGrid,
+  Scan
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import type { EventPhoto, UserProfile } from '../types';
@@ -48,6 +54,8 @@ import { ambientSound } from '../services/ambientSoundscape';
 import { soundFx } from '../services/biometricService';
 import { useCart } from '../context/CartContext';
 
+export type View3DMode = 'coverflow' | 'stage' | 'cylinder' | 'grid';
+
 interface PhotoModalViewerProps {
   photo: EventPhoto;
   photosList: EventPhoto[];
@@ -56,6 +64,7 @@ interface PhotoModalViewerProps {
   onSelectUserByTag?: (userId: string) => void;
   onPhotoChange: (photo: EventPhoto) => void;
   onUpdateAvatar?: (newAvatarUrl: string) => void;
+  initial3DMode?: View3DMode;
 }
 
 export const PhotoModalViewer: React.FC<PhotoModalViewerProps> = ({
@@ -65,6 +74,7 @@ export const PhotoModalViewer: React.FC<PhotoModalViewerProps> = ({
   onClose,
   onPhotoChange,
   onUpdateAvatar,
+  initial3DMode = 'coverflow',
 }) => {
   const { 
     addToCart, 
@@ -80,19 +90,19 @@ export const PhotoModalViewer: React.FC<PhotoModalViewerProps> = ({
   const isPurchased = isPhotoPurchased(photo.id);
   const saleConfig = getPhotoSaleConfig(photo);
 
-  // ⏱️ 1-second delayed overlay over fullscreen photo
-  const [showOverlays, setShowOverlays] = useState<boolean>(false);
+  // 🎛️ 3D View Mode State
+  const [view3DMode, setView3DMode] = useState<View3DMode>(initial3DMode);
+  const [isFaceMesh3DActive, setIsFaceMesh3DActive] = useState<boolean>(true);
+  const [isAutoPlaySlideshow, setIsAutoPlaySlideshow] = useState<boolean>(false);
+  const [slideSpeedMs] = useState<number>(3500);
+  const [slideProgress, setSlideProgress] = useState<number>(0);
+  const [isBrowserFullscreen, setIsBrowserFullscreen] = useState<boolean>(false);
+
+  // ⏱️ Delayed overlay control
+  const [showOverlays, setShowOverlays] = useState<boolean>(true);
   const [showSideDrawer, setShowSideDrawer] = useState<'none' | 'comments' | 'studio' | 'info'>('none');
 
-  useEffect(() => {
-    setShowOverlays(false);
-    const timer = setTimeout(() => {
-      setShowOverlays(true);
-    }, 1000); // Exibida em tela inteira e depois de 1s as informações aparecem sobre a foto
-    return () => clearTimeout(timer);
-  }, [photo.id]);
-
-  const [zoomLevel, setZoomLevel] = useState<number>(1);
+  // Zoom & Film state
   const [isLiked, setIsLiked] = useState<boolean>(photo.isLiked || false);
   const [likesCount, setLikesCount] = useState<number>(photo.likesCount);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -100,7 +110,15 @@ export const PhotoModalViewer: React.FC<PhotoModalViewerProps> = ({
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
   const [selectedFilm, setSelectedFilm] = useState<FilmPreset>(FILM_PRESETS[1]);
 
-  // 👤 Adicionar ao Meu Perfil State
+  // Parallax Gyro 3D Tilt State
+  const [tiltTransform, setTiltTransform] = useState<{ rx: number; ry: number; lx: number; ly: number }>({
+    rx: 0,
+    ry: 0,
+    lx: 50,
+    ly: 50,
+  });
+
+  // Profile status
   const [isAddedToProfile, setIsAddedToProfile] = useState<boolean>(() => {
     return isPhotoInUserProfile(photo.id, currentUser.id);
   });
@@ -109,8 +127,15 @@ export const PhotoModalViewer: React.FC<PhotoModalViewerProps> = ({
     setIsAddedToProfile(isPhotoInUserProfile(photo.id, currentUser.id));
   }, [photo.id, currentUser.id, isPhotoInUserProfile]);
 
-  // Story Share 9:16 Modal
+  // Sub-Modals
   const [isStoryShareOpen, setIsStoryShareOpen] = useState<boolean>(false);
+  const [isStoryModalOpen, setIsStoryModalOpen] = useState<boolean>(false);
+  const [isMagazineModalOpen, setIsMagazineModalOpen] = useState<boolean>(false);
+  const [isHireModalOpen, setIsHireModalOpen] = useState<boolean>(false);
+  const [isMotionModalOpen, setIsMotionModalOpen] = useState<boolean>(false);
+  const [isDirectSaleOpen, setIsDirectSaleOpen] = useState<boolean>(false);
+  const [isCertificateModalOpen, setIsCertificateModalOpen] = useState<boolean>(false);
+  const [isPrivacyRemovalOpen, setIsPrivacyRemovalOpen] = useState<boolean>(false);
 
   // Comments
   const [photoComments, setPhotoComments] = useState<{
@@ -124,45 +149,96 @@ export const PhotoModalViewer: React.FC<PhotoModalViewerProps> = ({
       id: 'c1',
       userName: 'Sophia Valente',
       userAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-      text: 'A iluminação e o enquadramento dessa foto ficaram absurdos! 😍🔥',
-      timestamp: 'há 10 min',
+      text: 'A experiência 3D desse flagra ficou surreal! Parece que estamos dentro da festa! 🔥',
+      timestamp: 'há 5 min',
     },
     {
       id: 'c2',
       userName: 'Meflagrou Oficial',
       userAvatar: '/founder_avatar.jpg',
-      text: 'Cobertura oficial 8K Ultra HD sem compressão 👑📸',
-      timestamp: 'há 25 min',
+      text: 'Cobertura oficial 8K Ultra HD com Biometria 3D FaceMesh 👑📸',
+      timestamp: 'há 18 min',
     }
   ]);
   const [commentInput, setCommentInput] = useState<string>('');
 
-  // Sub-Modals
-  const [isStoryModalOpen, setIsStoryModalOpen] = useState<boolean>(false);
-  const [isMagazineModalOpen, setIsMagazineModalOpen] = useState<boolean>(false);
-  const [isHireModalOpen, setIsHireModalOpen] = useState<boolean>(false);
-  const [isMotionModalOpen, setIsMotionModalOpen] = useState<boolean>(false);
-  const [isDirectSaleOpen, setIsDirectSaleOpen] = useState<boolean>(false);
-  const [isCertificateModalOpen, setIsCertificateModalOpen] = useState<boolean>(false);
-  const [isPrivacyRemovalOpen, setIsPrivacyRemovalOpen] = useState<boolean>(false);
+  const currentIndex = useMemo(() => {
+    const idx = photosList.findIndex((p) => p.id === photo.id);
+    return idx >= 0 ? idx : 0;
+  }, [photosList, photo.id]);
 
-  const currentIndex = photosList.findIndex((p) => p.id === photo.id);
-  const hasPrev = currentIndex > 0;
-  const hasNext = currentIndex < photosList.length - 1;
-  const colorPalette = extractPhotoColorPalette(photo.id);
+  const colorPalette = useMemo(() => extractPhotoColorPalette(photo.id), [photo.id]);
 
-  // Keyboard navigation & light dismiss
+  // 🎯 Navigation Handlers
+  const handleNextPhoto = useCallback(() => {
+    if (photosList.length === 0) return;
+    const nextIdx = (currentIndex + 1) % photosList.length;
+    onPhotoChange(photosList[nextIdx]);
+    setSlideProgress(0);
+    soundFx.playRadarTick();
+  }, [currentIndex, photosList, onPhotoChange]);
+
+  const handlePrevPhoto = useCallback(() => {
+    if (photosList.length === 0) return;
+    const prevIdx = (currentIndex - 1 + photosList.length) % photosList.length;
+    onPhotoChange(photosList[prevIdx]);
+    setSlideProgress(0);
+    soundFx.playRadarTick();
+  }, [currentIndex, photosList, onPhotoChange]);
+
+  // ⏱️ Auto-Play 3D Slideshow Engine
+  useEffect(() => {
+    if (!isAutoPlaySlideshow || photosList.length <= 1) {
+      setSlideProgress(0);
+      return;
+    }
+
+    const intervalTime = 50;
+    const step = (intervalTime / slideSpeedMs) * 100;
+
+    const timer = setInterval(() => {
+      setSlideProgress((prev) => {
+        if (prev >= 100) {
+          handleNextPhoto();
+          return 0;
+        }
+        return prev + step;
+      });
+    }, intervalTime);
+
+    return () => clearInterval(timer);
+  }, [isAutoPlaySlideshow, slideSpeedMs, photosList.length, handleNextPhoto]);
+
+  // 🎮 Keyboard navigation & hotkeys
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
       if (e.key === 'Escape') {
         ambientSound.stop();
         onClose();
-      } else if (e.key === 'ArrowLeft' && hasPrev) {
-        onPhotoChange(photosList[currentIndex - 1]);
-        setZoomLevel(1);
-      } else if (e.key === 'ArrowRight' && hasNext) {
-        onPhotoChange(photosList[currentIndex + 1]);
-        setZoomLevel(1);
+      } else if (e.key === 'ArrowLeft') {
+        handlePrevPhoto();
+      } else if (e.key === 'ArrowRight') {
+        handleNextPhoto();
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        setIsAutoPlaySlideshow((prev) => !prev);
+      } else if (e.key.toLowerCase() === 'f') {
+        handleToggleBrowserFullscreen();
+      } else if (e.key.toLowerCase() === 'h') {
+        setIsFaceMesh3DActive((prev) => !prev);
+        soundFx.playRadarTick();
+      } else if (e.key === '1') {
+        setView3DMode('coverflow');
+      } else if (e.key === '2') {
+        setView3DMode('stage');
+      } else if (e.key === '3') {
+        setView3DMode('cylinder');
+      } else if (e.key === '4') {
+        setView3DMode('grid');
       }
     };
 
@@ -171,11 +247,56 @@ export const PhotoModalViewer: React.FC<PhotoModalViewerProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
       ambientSound.stop();
     };
-  }, [currentIndex, hasPrev, hasNext, photosList, onClose, onPhotoChange]);
+  }, [handlePrevPhoto, handleNextPhoto, onClose]);
+
+  // 🖱️ 3D Parallax Mouse Tracking
+  const handleStageMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const percentX = (x / rect.width) * 100;
+    const percentY = (y / rect.height) * 100;
+
+    const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -16;
+    const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 16;
+
+    setTiltTransform({
+      rx: rotateX,
+      ry: rotateY,
+      lx: percentX,
+      ly: percentY,
+    });
+  };
+
+  const handleStageMouseLeave = () => {
+    setTiltTransform({ rx: 0, ry: 0, lx: 50, ly: 50 });
+  };
+
+  // 👆 Touch Swipe Gestures
+  const touchStartXRef = useRef<number>(0);
+  const touchStartYRef = useRef<number>(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX;
+    touchStartYRef.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diffX = e.changedTouches[0].clientX - touchStartXRef.current;
+    const diffY = e.changedTouches[0].clientY - touchStartYRef.current;
+
+    if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
+      if (diffX < 0) {
+        handleNextPhoto();
+      } else {
+        handlePrevPhoto();
+      }
+    }
+  };
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
+    setTimeout(() => setToastMessage(null), 3200);
   };
 
   const handleToggleLike = () => {
@@ -187,8 +308,8 @@ export const PhotoModalViewer: React.FC<PhotoModalViewerProps> = ({
       setLikesCount((c) => c + 1);
       soundFx.playRadarTick();
       confetti({
-        particleCount: 30,
-        spread: 50,
+        particleCount: 35,
+        spread: 55,
         origin: { y: 0.8 },
         colors: ['#ff007a', '#00f5d4', '#ffb703'],
       });
@@ -252,10 +373,22 @@ export const PhotoModalViewer: React.FC<PhotoModalViewerProps> = ({
       setIsPlayingAudio(false);
       showToast('Som ambiente desativado.');
     } else {
-      const mode = photo.eventName.toLowerCase().includes('sunset') ? 'sunset' : (photo.eventName.toLowerCase().includes('copa') ? 'lounge' : 'club');
+      const mode = photo.eventName.toLowerCase().includes('sunset') 
+        ? 'sunset' 
+        : (photo.eventName.toLowerCase().includes('copa') ? 'lounge' : 'club');
       ambientSound.playMode(mode);
       setIsPlayingAudio(true);
-      showToast(`Tocando atmosfera sonora de ${photo.eventName} 🎧`);
+      showToast(`Tocando atmosfera sonora 3D de ${photo.eventName} 🎧`);
+    }
+  };
+
+  const handleToggleBrowserFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().then(() => setIsBrowserFullscreen(true)).catch(() => {});
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().then(() => setIsBrowserFullscreen(false)).catch(() => {});
+      }
     }
   };
 
@@ -277,15 +410,25 @@ export const PhotoModalViewer: React.FC<PhotoModalViewerProps> = ({
     soundFx.playRadarTick();
   };
 
+  // 3D Coverflow Visible Slice Calculation
+  const coverflowVisiblePhotos = useMemo(() => {
+    const radius = 4; // -4 to +4 items around active
+    const result: Array<{ photo: EventPhoto; offset: number; index: number }> = [];
+    for (let offset = -radius; offset <= radius; offset++) {
+      const idx = currentIndex + offset;
+      if (idx >= 0 && idx < photosList.length) {
+        result.push({ photo: photosList[idx], offset, index: idx });
+      }
+    }
+    return result;
+  }, [currentIndex, photosList]);
+
   return (
     <>
       <div 
-        className="fullscreen-photo-viewer-root"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            setShowOverlays(!showOverlays);
-          }
-        }}
+        className="modal-3d-fullscreen-viewport"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         {/* Toast Notification */}
         {toastMessage && (
@@ -295,152 +438,397 @@ export const PhotoModalViewer: React.FC<PhotoModalViewerProps> = ({
           </div>
         )}
 
-        {/* 1. 🖼️ FULLSCREEN MAIN PHOTO (TELA INTEIRA) */}
+        {/* 1. 🌌 3D SPATIAL STAGE ENVIRONMENT */}
         <div 
-          className="fullscreen-image-stage"
-          onClick={() => setShowOverlays(!showOverlays)}
+          className={`modal-3d-stage-container mode-${view3DMode}`}
+          onMouseMove={handleStageMouseMove}
+          onMouseLeave={handleStageMouseLeave}
+          onClick={() => setShowOverlays((prev) => !prev)}
         >
-          <img 
-            src={photo.highResUrl || photo.url} 
-            alt={photo.eventName}
-            className="fullscreen-main-img"
+          {/* Reactive Ambient Glow Backdrop */}
+          <div 
+            className="modal-3d-ambient-glow"
             style={{
-              transform: `scale(${zoomLevel})`,
-              filter: selectedFilm.cssFilter,
+              background: `radial-gradient(circle at ${tiltTransform.lx}% ${tiltTransform.ly}%, ${colorPalette[0]?.hex || 'var(--accent-teal)'}33 0%, rgba(121, 40, 202, 0.15) 45%, transparent 75%)`
             }}
           />
 
-          {/* 🛡️ Marca d'Água de Proteção Anti-Print & Anti-Captura Mobile */}
-          {!isPurchased && (
-            <div className="mobile-anti-print-watermark-overlay" aria-hidden="true">
-              <div className="anti-print-watermark-center">
-                <Lock size={18} />
-                <span>meflagrou.com • FOTO OFICIAL 8K</span>
+          {/* 🌀 MODO 1: 3D COVERFLOW (CARROSSEL COM PROFUNDIDADE Z E ROTAÇÃO Y) */}
+          {view3DMode === 'coverflow' && (
+            <div className="coverflow-3d-track">
+              {coverflowVisiblePhotos.map(({ photo: p, offset, index }) => {
+                const isCenter = offset === 0;
+                const absOffset = Math.abs(offset);
+                const rotateY = isCenter ? tiltTransform.ry : offset < 0 ? 50 : -50;
+                const rotateX = isCenter ? tiltTransform.rx : 0;
+                const translateZ = isCenter ? 120 : -180 * absOffset;
+                const translateX = offset * 230;
+                const opacity = Math.max(0.25, 1 - absOffset * 0.2);
+                const scale = isCenter ? 1.05 : Math.max(0.72, 1 - absOffset * 0.1);
+
+                return (
+                  <div
+                    key={p.id}
+                    className={`coverflow-3d-card ${isCenter ? 'active-center' : ''}`}
+                    style={{
+                      transform: `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) rotateX(${rotateX}deg) scale(${scale})`,
+                      opacity,
+                      zIndex: 100 - absOffset,
+                      filter: isCenter ? selectedFilm.cssFilter : 'brightness(0.65) saturate(0.8)',
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!isCenter) {
+                        onPhotoChange(photosList[index]);
+                        soundFx.playRadarTick();
+                      }
+                    }}
+                  >
+                    <img 
+                      src={isCenter ? (p.highResUrl || p.url) : p.url} 
+                      alt={p.eventName} 
+                      className="coverflow-card-img"
+                    />
+
+                    {/* 🛡️ Anti-Print & Watermark Shield */}
+                    {!isPurchased && isCenter && (
+                      <div className="mobile-anti-print-watermark-overlay" aria-hidden="true">
+                        <div className="anti-print-watermark-center">
+                          <Lock size={16} />
+                          <span>meflagrou.com • 3D PRO</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 🤖 HUD Biométrico 3D FaceMesh */}
+                    {isCenter && isFaceMesh3DActive && p.tags && p.tags.length > 0 && (
+                      <div className="biometric-3d-facemesh-overlay">
+                        <div className="facemesh-scanner-beam" />
+                        {p.tags.map((tag, tIdx) => {
+                          const posX = tag.boundingBox ? tag.boundingBox.x : 50;
+                          const posY = tag.boundingBox ? tag.boundingBox.y : 50;
+                          return (
+                            <div 
+                              key={tIdx} 
+                              className="facemesh-3d-face-box"
+                              style={{
+                                left: `${posX}%`,
+                                top: `${posY}%`,
+                              }}
+                            >
+                              <div className="facemesh-wireframe-bracket top-left" />
+                              <div className="facemesh-wireframe-bracket top-right" />
+                              <div className="facemesh-wireframe-bracket bottom-left" />
+                              <div className="facemesh-wireframe-bracket bottom-right" />
+                              <div className="facemesh-3d-points-matrix">
+                                {[...Array(9)].map((_, ptIdx) => (
+                                  <span key={ptIdx} className="facemesh-mesh-dot" />
+                                ))}
+                              </div>
+                              <div className="facemesh-3d-tag-badge">
+                                <Scan size={10} color="#00f5d4" />
+                                <span>{tag.userName} ({Math.round(tag.confidence * 100)}%)</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Hologram Floor Mirror Reflection */}
+                    <div className="photo-3d-floor-reflection">
+                      <img src={p.url} alt="" className="reflection-img" />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* 🎭 MODO 2: 3D CINEMA STAGE (IMAX COM GYRO-PARALLAX E LUZ ESPECULAR) */}
+          {view3DMode === 'stage' && (
+            <div 
+              className="cinema-3d-stage-wrapper"
+              style={{
+                transform: `perspective(1100px) rotateX(${tiltTransform.rx}deg) rotateY(${tiltTransform.ry}deg)`,
+                filter: selectedFilm.cssFilter,
+              }}
+            >
+              <img 
+                src={photo.highResUrl || photo.url} 
+                alt={photo.eventName} 
+                className="cinema-stage-main-img"
+              />
+
+              {/* Dynamic Specular Lens Sheen */}
+              <div 
+                className="cinema-specular-light"
+                style={{
+                  background: `radial-gradient(circle at ${tiltTransform.lx}% ${tiltTransform.ly}%, rgba(255,255,255,0.22) 0%, rgba(0,245,212,0.12) 30%, transparent 65%)`
+                }}
+              />
+
+              {/* 🛡️ Watermark */}
+              {!isPurchased && (
+                <div className="mobile-anti-print-watermark-overlay" aria-hidden="true">
+                  <div className="anti-print-watermark-center">
+                    <Lock size={18} />
+                    <span>meflagrou.com • FOTO OFICIAL 8K</span>
+                  </div>
+                </div>
+              )}
+
+              {/* 🤖 HUD Biométrico 3D FaceMesh */}
+              {isFaceMesh3DActive && photo.tags && photo.tags.length > 0 && (
+                <div className="biometric-3d-facemesh-overlay">
+                  <div className="facemesh-scanner-beam" />
+                  {photo.tags.map((tag, tIdx) => {
+                    const posX = tag.boundingBox ? tag.boundingBox.x : 50;
+                    const posY = tag.boundingBox ? tag.boundingBox.y : 50;
+                    return (
+                      <div 
+                        key={tIdx} 
+                        className="facemesh-3d-face-box"
+                        style={{
+                          left: `${posX}%`,
+                          top: `${posY}%`,
+                        }}
+                      >
+                        <div className="facemesh-wireframe-bracket top-left" />
+                        <div className="facemesh-wireframe-bracket top-right" />
+                        <div className="facemesh-wireframe-bracket bottom-left" />
+                        <div className="facemesh-wireframe-bracket bottom-right" />
+                        <div className="facemesh-3d-points-matrix">
+                          {[...Array(12)].map((_, ptIdx) => (
+                            <span key={ptIdx} className="facemesh-mesh-dot" />
+                          ))}
+                        </div>
+                        <div className="facemesh-3d-tag-badge">
+                          <Scan size={11} color="#00f5d4" />
+                          <span>{tag.userName} • {Math.round(tag.confidence * 100)}% Match</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Floor Reflection */}
+              <div className="photo-3d-floor-reflection">
+                <img src={photo.url} alt="" className="reflection-img" />
               </div>
             </div>
           )}
 
-          {/* Previous / Next Arrow Controls */}
-          {hasPrev && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onPhotoChange(photosList[currentIndex - 1]);
-                setZoomLevel(1);
-              }}
-              className="fullscreen-nav-btn left"
-              title="Foto anterior (Seta esquerda)"
-            >
-              <ChevronLeft size={24} />
-            </button>
+          {/* 🎡 MODO 3: 3D CYLINDER WHEEL (CARROSSEL CIRCULAR EM ÓRBITA 3D) */}
+          {view3DMode === 'cylinder' && (
+            <div className="cylinder-3d-carousel-scene">
+              <div 
+                className="cylinder-3d-ring"
+                style={{
+                  transform: `rotateY(${-currentIndex * (360 / Math.min(16, photosList.length))}deg) rotateX(${tiltTransform.rx * 0.4}deg)`
+                }}
+              >
+                {photosList.slice(0, 16).map((p, pIdx) => {
+                  const total = Math.min(16, photosList.length);
+                  const angle = pIdx * (360 / total);
+                  const isCurrent = p.id === photo.id;
+
+                  return (
+                    <div
+                      key={p.id}
+                      className={`cylinder-3d-panel ${isCurrent ? 'active' : ''}`}
+                      style={{
+                        transform: `rotateY(${angle}deg) translateZ(420px)`,
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onPhotoChange(p);
+                        soundFx.playRadarTick();
+                      }}
+                    >
+                      <img src={p.url} alt={p.eventName} className="cylinder-panel-img" />
+                      <div className="cylinder-panel-caption">
+                        <span>{p.eventName}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           )}
 
-          {hasNext && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onPhotoChange(photosList[currentIndex + 1]);
-                setZoomLevel(1);
-              }}
-              className="fullscreen-nav-btn right"
-              title="Próxima foto (Seta direita)"
-            >
-              <ChevronRight size={24} />
-            </button>
+          {/* 🧱 MODO 4: 3D SPATIAL GRID (MOSAICO 3D TRIDIMENSIONAL) */}
+          {view3DMode === 'grid' && (
+            <div className="grid-3d-matrix-scene no-scrollbar">
+              <div 
+                className="grid-3d-matrix-plane"
+                style={{
+                  transform: `perspective(1200px) rotateX(18deg) rotateY(${tiltTransform.ry * 0.3}deg) scale(0.95)`
+                }}
+              >
+                {photosList.map((p, pIdx) => {
+                  const isCurrent = p.id === photo.id;
+                  return (
+                    <div
+                      key={p.id}
+                      className={`grid-3d-card ${isCurrent ? 'active' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onPhotoChange(p);
+                        setView3DMode('coverflow');
+                        soundFx.playRadarTick();
+                      }}
+                    >
+                      <img src={p.url} alt={p.eventName} className="grid-3d-img" />
+                      <div className="grid-3d-overlay">
+                        <span className="grid-3d-title">{p.eventName}</span>
+                        <span className="grid-3d-sub">{p.city} • #{pIdx + 1}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           )}
+
+          {/* Navigation Floating Side Arrows */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePrevPhoto();
+            }}
+            className="modal-3d-arrow left"
+            title="Foto anterior (Seta esquerda)"
+          >
+            <ChevronLeft size={28} />
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleNextPhoto();
+            }}
+            className="modal-3d-arrow right"
+            title="Próxima foto (Seta direita)"
+          >
+            <ChevronRight size={28} />
+          </button>
         </div>
 
-        {/* 2. 📌 FLOATING TOP BAR (APARECE SOBRE A FOTO DEPOIS DE 1S) */}
-        <header className={`fullscreen-floating-top ${showOverlays ? 'visible' : ''}`}>
-          {/* Author & Event Info */}
-          <div className="floating-top-left">
+        {/* 2. 🎛️ FLOATING TOP 3D CONTROLLER BAR */}
+        <header className={`modal-3d-top-bar ${showOverlays ? 'visible' : ''}`}>
+          {/* Left: Author, Event & Mode Selector */}
+          <div className="modal-3d-top-left">
             <img 
               src={photo.photographer.avatar} 
               alt={photo.photographer.name} 
-              className="floating-author-avatar"
+              className="modal-3d-author-avatar"
             />
-            <div className="floating-author-info">
-              <div className="floating-author-row">
-                <span className="floating-author-name">{photo.photographer.name}</span>
-                <span className="floating-pro-badge">PRO 8K</span>
+            <div className="modal-3d-meta-wrap">
+              <div className="modal-3d-title-row">
+                <span className="modal-3d-author-name">{photo.photographer.name}</span>
+                <span className="modal-3d-badge-3d">
+                  <Box size={11} />
+                  <span>3D SPACE</span>
+                </span>
+                <span className="modal-3d-counter-pill">
+                  {currentIndex + 1} / {photosList.length}
+                </span>
               </div>
-              <div className="floating-event-row">
-                <MapPin size={12} color="var(--accent-teal)" />
+              <div className="modal-3d-event-row">
+                <MapPin size={11} color="var(--accent-teal)" />
                 <span>{photo.eventName} • {photo.city}</span>
               </div>
             </div>
           </div>
 
-          {/* Top Actions & Dismiss */}
-          <div className="floating-top-right">
-            {/* Zoom Controls */}
-            <div className="floating-zoom-controls">
-              <button 
-                onClick={(e) => { e.stopPropagation(); setZoomLevel((z) => Math.max(1, z - 0.25)); }}
-                className="floating-icon-btn"
-                title="Reduzir zoom"
-              >
-                <ZoomOut size={16} />
-              </button>
-              <span className="zoom-value">{Math.round(zoomLevel * 100)}%</span>
-              <button 
-                onClick={(e) => { e.stopPropagation(); setZoomLevel((z) => Math.min(2.5, z + 0.25)); }}
-                className="floating-icon-btn"
-                title="Aumentar zoom"
-              >
-                <ZoomIn size={16} />
-              </button>
-              {zoomLevel > 1 && (
-                <button 
-                  onClick={(e) => { e.stopPropagation(); setZoomLevel(1); }}
-                  className="floating-icon-btn"
-                  title="Restaurar zoom"
-                >
-                  <RotateCcw size={14} />
-                </button>
-              )}
-            </div>
-
-            {/* Adicionar ao Meu Perfil Button */}
+          {/* Center: 4 Modos 3D Switches */}
+          <div className="modal-3d-mode-switcher">
             <button
-              onClick={handleToggleAddToProfile}
-              className={`floating-add-profile-btn ${isAddedToProfile ? 'added' : ''}`}
-              title={isAddedToProfile ? 'Esta foto está no seu perfil (Clique para remover)' : 'Adicionar esta foto ao seu perfil'}
+              onClick={() => { setView3DMode('coverflow'); soundFx.playRadarTick(); }}
+              className={`mode-3d-chip ${view3DMode === 'coverflow' ? 'active' : ''}`}
+              title="Modo 1: 3D Coverflow (Atalho 1)"
             >
-              {isAddedToProfile ? (
-                <>
-                  <CheckCircle2 size={15} color="#00f5d4" />
-                  <span>No Meu Perfil</span>
-                </>
-              ) : (
-                <>
-                  <UserPlus size={15} />
-                  <span>Adicionar ao Perfil</span>
-                </>
-              )}
+              <Layers size={13} />
+              <span>Coverflow 3D</span>
             </button>
 
-            {/* Soundscape Ambience Audio Toggle */}
+            <button
+              onClick={() => { setView3DMode('stage'); soundFx.playRadarTick(); }}
+              className={`mode-3d-chip ${view3DMode === 'stage' ? 'active' : ''}`}
+              title="Modo 2: Palco IMAX 3D Cinema (Atalho 2)"
+            >
+              <Box size={13} />
+              <span>Cinema 3D</span>
+            </button>
+
+            <button
+              onClick={() => { setView3DMode('cylinder'); soundFx.playRadarTick(); }}
+              className={`mode-3d-chip ${view3DMode === 'cylinder' ? 'active' : ''}`}
+              title="Modo 3: Cilindro Orbital 3D (Atalho 3)"
+            >
+              <Disc size={13} />
+              <span>Cilindro 3D</span>
+            </button>
+
+            <button
+              onClick={() => { setView3DMode('grid'); soundFx.playRadarTick(); }}
+              className={`mode-3d-chip ${view3DMode === 'grid' ? 'active' : ''}`}
+              title="Modo 4: Mosaico Espacial 3D (Atalho 4)"
+            >
+              <LayoutGrid size={13} />
+              <span>Mosaico 3D</span>
+            </button>
+          </div>
+
+          {/* Right: Actions, Biometrics, Audio, Fullscreen, Close */}
+          <div className="modal-3d-top-right">
+            {/* HUD Biométrico 3D FaceMesh Toggle */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsFaceMesh3DActive(!isFaceMesh3DActive);
+                soundFx.playRadarTick();
+                showToast(isFaceMesh3DActive ? 'HUD Biométrico 3D desativado.' : 'HUD Biométrico 3D FaceMesh ativado!');
+              }}
+              className={`modal-3d-icon-btn ${isFaceMesh3DActive ? 'active-hud' : ''}`}
+              title="Alternar HUD Biométrico 3D FaceMesh (Atalho H)"
+            >
+              <Scan size={16} color={isFaceMesh3DActive ? '#00f5d4' : 'currentColor'} />
+              <span className="btn-label-desktop">IA FaceMesh</span>
+            </button>
+
+            {/* Slideshow Auto-Play Toggle */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsAutoPlaySlideshow(!isAutoPlaySlideshow);
+                soundFx.playRadarTick();
+              }}
+              className={`modal-3d-icon-btn ${isAutoPlaySlideshow ? 'active-play' : ''}`}
+              title="Auto-Play Slideshow 3D (Espaço)"
+            >
+              {isAutoPlaySlideshow ? <Pause size={16} fill="#00f5d4" color="#00f5d4" /> : <Play size={16} />}
+              <span className="btn-label-desktop">{isAutoPlaySlideshow ? 'Pausar' : 'Play 3D'}</span>
+            </button>
+
+            {/* Soundscape Ambience Audio */}
             <button
               onClick={(e) => { e.stopPropagation(); handleToggleSoundscape(); }}
-              className={`floating-icon-btn ${isPlayingAudio ? 'active-audio' : ''}`}
-              title="Atmosfera Sonora do Evento"
+              className={`modal-3d-icon-btn ${isPlayingAudio ? 'active-audio' : ''}`}
+              title="Atmosfera Sonora 3D da Balada"
             >
-              {isPlayingAudio ? <Volume2 size={18} color="var(--accent-teal)" /> : <VolumeX size={18} />}
+              {isPlayingAudio ? <Volume2 size={16} color="var(--accent-teal)" /> : <VolumeX size={16} />}
             </button>
 
-            {/* LGPD Privacy Removal Request */}
+            {/* Browser Native Fullscreen */}
             <button
-              onClick={(e) => { 
-                e.stopPropagation(); 
-                haptics.lightTick();
-                setIsPrivacyRemovalOpen(true); 
-              }}
-              className="floating-icon-btn"
-              style={{ color: '#00f0ff' }}
-              title="Solicitar Desfoque Facial ou Remoção da Foto (LGPD)"
+              onClick={(e) => { e.stopPropagation(); handleToggleBrowserFullscreen(); }}
+              className="modal-3d-icon-btn"
+              title="Alternar Tela Cheia Nativa (Atalho F)"
             >
-              <ShieldAlert size={17} />
+              {isBrowserFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
             </button>
 
             {/* Close Button */}
@@ -449,136 +837,176 @@ export const PhotoModalViewer: React.FC<PhotoModalViewerProps> = ({
                 ambientSound.stop();
                 onClose();
               }}
-              className="floating-close-btn"
-              title="Fechar Tela Inteira (Esc)"
+              className="modal-3d-close-btn"
+              title="Fechar Visualizador 3D (Esc)"
             >
               <X size={20} />
             </button>
           </div>
         </header>
 
-        {/* 3. 📌 FLOATING BOTTOM ACTION BAR (APARECE SOBRE A FOTO DEPOIS DE 1S) */}
-        <footer className={`fullscreen-floating-bottom ${showOverlays ? 'visible' : ''}`}>
-          {/* Bottom Left: Event Meta & Resolution */}
-          <div className="floating-bottom-left">
-            <div className="floating-event-title">{photo.eventName}</div>
-            <div className="floating-meta-pills">
-              <span className="meta-pill"><Calendar size={11} /> {photo.eventDate}</span>
-              <span className="meta-pill"><Clock size={11} /> {photo.time}</span>
-              <span className="meta-pill highlight"><Sparkles size={11} /> 8K Ultra HD</span>
+        {/* 3. ⏳ NEON PROGRESS BAR (SLIDESHOW) */}
+        {isAutoPlaySlideshow && (
+          <div className="modal-3d-slideshow-progress-bar">
+            <div className="slideshow-progress-fill" style={{ width: `${slideProgress}%` }} />
+          </div>
+        )}
+
+        {/* 4. 📌 FLOATING BOTTOM 3D ACTION BAR & THUMBNAILS RIBBON */}
+        <footer className={`modal-3d-bottom-bar ${showOverlays ? 'visible' : ''}`}>
+          {/* Mini 3D Thumbnails Ribbon Strip */}
+          <div className="modal-3d-thumbnails-ribbon no-scrollbar">
+            {photosList.map((p, idx) => {
+              const isSelected = p.id === photo.id;
+              return (
+                <div
+                  key={p.id}
+                  className={`ribbon-thumb-item ${isSelected ? 'selected' : ''}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPhotoChange(p);
+                    soundFx.playRadarTick();
+                  }}
+                  title={`Foto ${idx + 1}: ${p.eventName}`}
+                >
+                  <img src={p.url} alt="" className="ribbon-thumb-img" />
+                  {isSelected && <div className="ribbon-active-indicator" />}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Action Row */}
+          <div className="modal-3d-action-row">
+            {/* Left: Event & Resolution Info */}
+            <div className="bottom-left-info">
+              <span className="info-title">{photo.eventName}</span>
+              <div className="info-meta-chips">
+                <span className="info-chip"><Calendar size={11} /> {photo.eventDate}</span>
+                <span className="info-chip"><Clock size={11} /> {photo.time}</span>
+                <span className="info-chip highlight"><Sparkles size={11} /> 8K Ultra HD</span>
+              </div>
             </div>
-          </div>
 
-          {/* Bottom Center: Quick Buy / Download Pill */}
-          <div className="floating-bottom-center">
-            {isPurchased ? (
-              <button 
-                onClick={handleDownload}
-                disabled={isDownloading}
-                className="floating-buy-btn purchased"
-                title="Baixar arquivo original de alta resolução"
-              >
-                <Download size={16} />
-                <span>{isDownloading ? 'Baixando...' : 'Baixar Foto Original HD'}</span>
-              </button>
-            ) : (
-              <button 
-                onClick={handleBuyNow}
-                className="floating-buy-btn"
-                title="Comprar foto em Ultra HD sem marca d'água"
-              >
-                <ShoppingBag size={16} />
-                <span>Comprar Foto HD • R$ {saleConfig.price.toFixed(2).replace('.', ',')}</span>
-              </button>
-            )}
-          </div>
+            {/* Center: Buy HD / Download Button (Split 90/9/1%) */}
+            <div className="bottom-center-cta">
+              {isPurchased ? (
+                <button 
+                  onClick={handleDownload}
+                  disabled={isDownloading}
+                  className="modal-3d-buy-btn purchased"
+                  title="Baixar arquivo original de alta resolução"
+                >
+                  <Download size={16} />
+                  <span>{isDownloading ? 'Baixando...' : 'Baixar Foto Original 8K'}</span>
+                </button>
+              ) : (
+                <button 
+                  onClick={handleBuyNow}
+                  className="modal-3d-buy-btn"
+                  title="Comprar foto em Ultra HD sem marca d'água com PIX"
+                >
+                  <ShoppingBag size={16} />
+                  <span>Comprar Foto 8K • R$ {saleConfig.price.toFixed(2).replace('.', ',')}</span>
+                </button>
+              )}
+            </div>
 
-          {/* Bottom Right: Like, Comments, Share Stories, Tools */}
-          <div className="floating-bottom-right">
-            {/* Definir como Foto de Perfil se a Foto for Comprada */}
-            {isPurchased && onUpdateAvatar && (
+            {/* Right: Interaction Pills */}
+            <div className="bottom-right-tools">
+              {/* Usar como Foto de Perfil quando comprada */}
+              {isPurchased && onUpdateAvatar && (
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onUpdateAvatar(photo.url);
+                    showToast('✨ Foto definida como seu avatar oficial!');
+                  }}
+                  className="modal-3d-tool-pill highlight-story"
+                  title="Definir esta foto comprada como seu avatar de perfil oficial"
+                >
+                  <Camera size={16} color="var(--accent-cyan)" />
+                  <span>Avatar</span>
+                </button>
+              )}
+
+              {/* Adicionar ao Meu Perfil */}
+              <button 
+                onClick={handleToggleAddToProfile}
+                className={`modal-3d-tool-pill ${isAddedToProfile ? 'added' : ''}`}
+                title={isAddedToProfile ? 'Foto salva no seu perfil' : 'Adicionar foto ao meu perfil'}
+              >
+                {isAddedToProfile ? <CheckCircle2 size={16} color="#00f5d4" /> : <UserPlus size={16} color="var(--accent-teal)" />}
+                <span>{isAddedToProfile ? 'No Perfil' : 'Salvar Perfil'}</span>
+              </button>
+
+              {/* Curtir */}
+              <button 
+                onClick={(e) => { e.stopPropagation(); handleToggleLike(); }}
+                className={`modal-3d-tool-pill ${isLiked ? 'liked' : ''}`}
+                title="Curtir foto"
+              >
+                <Heart size={16} fill={isLiked ? '#ff007a' : 'none'} color={isLiked ? '#ff007a' : 'currentColor'} />
+                <span>{likesCount}</span>
+              </button>
+
+              {/* Comentários */}
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
-                  onUpdateAvatar(photo.url);
-                  setToastMessage('✨ Foto definida como seu avatar oficial!');
-                  setTimeout(() => setToastMessage(null), 3500);
+                  setShowSideDrawer(showSideDrawer === 'comments' ? 'none' : 'comments');
                 }}
-                className="floating-action-pill highlight"
-                title="Definir esta foto comprada como seu avatar de perfil oficial"
-                style={{ borderColor: 'var(--accent-cyan)', color: 'var(--accent-cyan)' }}
+                className={`modal-3d-tool-pill ${showSideDrawer === 'comments' ? 'active' : ''}`}
+                title="Ver comentários da foto"
               >
-                <Camera size={18} color="var(--accent-cyan)" />
-                <span>Usar no Perfil</span>
+                <MessageCircle size={16} />
+                <span>{photoComments.length}</span>
               </button>
-            )}
 
-            {/* Adicionar ao Meu Perfil Action Pill */}
-            <button 
-              onClick={handleToggleAddToProfile}
-              className={`floating-action-pill ${isAddedToProfile ? 'added-profile' : ''}`}
-              title={isAddedToProfile ? 'Foto salva no seu perfil' : 'Adicionar foto ao meu perfil'}
-            >
-              {isAddedToProfile ? (
-                <CheckCircle2 size={18} color="#00f5d4" />
-              ) : (
-                <UserPlus size={18} color="var(--accent-teal)" />
-              )}
-              <span>{isAddedToProfile ? 'No Perfil' : 'Meu Perfil'}</span>
-            </button>
+              {/* Stories 9:16 */}
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsStoryShareOpen(true);
+                }}
+                className="modal-3d-tool-pill highlight-story"
+                title="Compartilhar no Instagram Stories (9:16)"
+              >
+                <Share2 size={16} color="var(--accent-magenta)" />
+                <span>Stories</span>
+              </button>
 
-            {/* Like Heart */}
-            <button 
-              onClick={(e) => { e.stopPropagation(); handleToggleLike(); }}
-              className={`floating-action-pill ${isLiked ? 'liked' : ''}`}
-              title="Curtir foto"
-            >
-              <Heart size={18} fill={isLiked ? '#ff007a' : 'none'} color={isLiked ? '#ff007a' : 'currentColor'} />
-              <span>{likesCount}</span>
-            </button>
+              {/* Estúdio LUMEN & EXIF */}
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowSideDrawer(showSideDrawer === 'studio' ? 'none' : 'studio');
+                }}
+                className={`modal-3d-tool-pill ${showSideDrawer === 'studio' ? 'active' : ''}`}
+                title="Efeitos LUMEN e Informações da Câmera"
+              >
+                <Sliders size={16} />
+                <span>Estúdio</span>
+              </button>
 
-            {/* Comments Toggle */}
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowSideDrawer(showSideDrawer === 'comments' ? 'none' : 'comments');
-              }}
-              className={`floating-action-pill ${showSideDrawer === 'comments' ? 'active' : ''}`}
-              title="Ver comentários da foto"
-            >
-              <MessageCircle size={18} />
-              <span>{photoComments.length}</span>
-            </button>
-
-            {/* Share to Stories 9:16 */}
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsStoryShareOpen(true);
-              }}
-              className="floating-action-pill highlight"
-              title="Compartilhar no Instagram Stories (9:16)"
-            >
-              <Share2 size={18} color="var(--accent-magenta)" />
-              <span>Stories</span>
-            </button>
-
-            {/* Studio Tools (Presets / EXIF) */}
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowSideDrawer(showSideDrawer === 'studio' ? 'none' : 'studio');
-              }}
-              className={`floating-action-pill ${showSideDrawer === 'studio' ? 'active' : ''}`}
-              title="Efeitos LUMEN e Informações da Câmera"
-            >
-              <Sliders size={18} />
-              <span>Estúdio</span>
-            </button>
+              {/* LGPD Privacy Removal Request */}
+              <button
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  haptics.lightTick();
+                  setIsPrivacyRemovalOpen(true); 
+                }}
+                className="modal-3d-tool-pill"
+                style={{ color: '#00f0ff' }}
+                title="Solicitar Desfoque Facial ou Remoção da Foto (LGPD)"
+              >
+                <ShieldAlert size={16} />
+              </button>
+            </div>
           </div>
         </footer>
 
-        {/* 4. 🗂️ SIDE DRAWER (COMENTÁRIOS E ESTÚDIO LUMEN OVERLAY) */}
+        {/* 5. 🗂️ SIDE DRAWER (COMENTÁRIOS E ESTÚDIO LUMEN OVERLAY) */}
         {showSideDrawer !== 'none' && (
           <aside className="fullscreen-side-drawer" onClick={(e) => e.stopPropagation()}>
             <div className="drawer-header">
