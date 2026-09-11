@@ -450,6 +450,7 @@ export const InstagramApp: React.FC = () => {
         onOpenUpload={() => setIsPhotographerUploadOpen(true)}
         onOpenBattle={() => setIsBattleModalOpen(true)}
         onOpenHallOfFame={() => setIsHallOfFameOpen(true)}
+        onOpenFaceScanner={() => setIsFaceScannerOpen(true)}
       />
 
       {/* 🎬 MODALS & POPUPS */}

@@ -26,7 +26,8 @@ import {
   Edit3,
   Radio
 } from 'lucide-react';
-import type { UserProfile, EventPhoto } from '../types';
+import type { EventPhoto } from '../types';
+import { type UserProfile, isUserAdmin } from '../types';
 import { MOCK_PHOTOS, MOCK_USERS, MOCK_EVENTS } from '../data/mockDatabase';
 import { generateUserSamplePhotos } from '../data/userPhotoGenerator';
 import { usePwaInstall } from '../hooks/usePwaInstall';
@@ -87,7 +88,8 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
 
   const { triggerInstall } = usePwaInstall();
   const isOwnProfile = currentUser ? currentUser.id === user.id : true;
-  const isFounderProfile = user.id === 'user_founder';
+  const isFounderProfile = isUserAdmin(user);
+  const isAdmin = isUserAdmin(currentUser || user);
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const [selectedEventId, setSelectedEventId] = useState<string>('all');
   const [selectedSquadFriendId, setSelectedSquadFriendId] = useState<string | null>(null);
@@ -473,13 +475,39 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
             <span>Indicar (10%)</span>
           </button>
 
-          <button
-            onClick={() => setIsClientUploadOpen(true)}
-            className="hero-action-btn upload"
-          >
-            <PlusCircle size={12} />
-            <span>Postar Foto</span>
-          </button>
+          {isAdmin ? (
+            <button
+              onClick={() => setIsClientUploadOpen(true)}
+              className="hero-action-btn upload"
+              style={{
+                background: 'rgba(0, 245, 212, 0.15)',
+                borderColor: 'var(--accent-teal)',
+                color: 'var(--accent-teal)'
+              }}
+              title="Publicar Galeria Oficial de Eventos (Administrador)"
+            >
+              <PlusCircle size={12} color="var(--accent-teal)" />
+              <span>Publicar Galeria (Admin)</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setSelectedFilter('purchased');
+                const el = document.getElementById('profile-gallery-section') || document.getElementById('user-photos-grid');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+              className="hero-action-btn upload"
+              style={{
+                background: 'rgba(0, 245, 212, 0.12)',
+                borderColor: 'rgba(0, 245, 212, 0.35)',
+                color: 'var(--accent-teal)'
+              }}
+              title="Ver e Baixar Minhas Fotos Compradas em Ultra HD 8K"
+            >
+              <Download size={12} color="var(--accent-teal)" />
+              <span>Minhas Compras 8K</span>
+            </button>
+          )}
 
           <button
             onClick={handleShareProfile}
@@ -866,14 +894,28 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
           <Camera size={44} color="var(--text-muted)" style={{ margin: '0 auto 12px auto' }} />
           <h3>Nenhum flagra encontrado nesta categoria</h3>
           <p>Tente selecionar outro evento ou filtro acima para ver mais fotos.</p>
-          <button
-            onClick={() => setIsClientUploadOpen(true)}
-            className="btn-primary"
-            style={{ padding: '10px 18px', fontSize: '0.85rem', marginTop: 12 }}
-          >
-            <PlusCircle size={15} />
-            <span>+ Vender Foto do Celular</span>
-          </button>
+          {isAdmin ? (
+            <button
+              onClick={() => setIsClientUploadOpen(true)}
+              className="btn-primary"
+              style={{ padding: '10px 18px', fontSize: '0.85rem', marginTop: 12 }}
+            >
+              <PlusCircle size={15} />
+              <span>+ Publicar Nova Galeria Oficial (Admin)</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setSelectedFilter('all');
+                setSelectedEventId('all');
+              }}
+              className="btn-primary"
+              style={{ padding: '10px 18px', fontSize: '0.85rem', marginTop: 12 }}
+            >
+              <Camera size={15} />
+              <span>Ver Todos os Meus Flagras</span>
+            </button>
+          )}
         </div>
       ) : (
         <div className="profile-unified-photos-grid" id="user-photos-grid">
@@ -1001,7 +1043,7 @@ export const SocialProfile: React.FC<SocialProfileProps> = ({
         />
       )}
 
-      {isClientUploadOpen && (
+      {isClientUploadOpen && isAdmin && (
         <PhotoUploadDashboard
           currentUser={user}
           isOpen={isClientUploadOpen}

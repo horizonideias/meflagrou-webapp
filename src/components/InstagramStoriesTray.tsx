@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Crown, Video, Radio } from 'lucide-react';
-import type { UserProfile } from '../types';
+import { type UserProfile, isUserAdmin } from '../types';
 import { type StoryItem } from '../data/mockStories';
 import { haptics } from '../utils/haptics';
 
@@ -20,6 +20,7 @@ export const InstagramStoriesTray: React.FC<InstagramStoriesTrayProps> = ({
   onOpenLive,
 }) => {
   const [isPaused, setIsPaused] = useState<boolean>(false);
+  const isAdmin = isUserAdmin(currentUser);
 
   // 1. Fixed Logged-in User Story on the Left
   const userStory = stories.find(s => s.authorId === currentUser.id) || {
@@ -39,7 +40,7 @@ export const InstagramStoriesTray: React.FC<InstagramStoriesTrayProps> = ({
   // Duplicate exactly once for an ultra-smooth, lightweight infinite GPU marquee loop
   const loopStories = [...otherStories, ...otherStories];
 
-  const isFounder = currentUser.id === 'user_founder';
+  const isFounder = currentUser.id === 'user_founder' || isAdmin;
 
   return (
     <div className="instagram-stories-wrapper">
@@ -50,7 +51,7 @@ export const InstagramStoriesTray: React.FC<InstagramStoriesTrayProps> = ({
         <div
           onClick={() => onOpenStory(userStory as StoryItem)}
           className="story-avatar-item fixed-user-item"
-          title="Seu Story (Clique para ver ou postar)"
+          title={isAdmin ? "Seu Story (Clique para ver ou postar como Admin)" : "Seu Story (Clique para ver)"}
         >
           <div className={`story-ring ${isFounder ? 'ring-founder' : 'ring-user'} ring-pulse-glow`}>
             <div className="story-ring-inner">
@@ -61,19 +62,21 @@ export const InstagramStoriesTray: React.FC<InstagramStoriesTrayProps> = ({
               />
             </div>
 
-            {/* Post Story Plus Badge */}
-            <div
-              className="story-add-badge"
-              onClick={(e) => {
-                if (onOpenUpload) {
-                  e.stopPropagation();
-                  onOpenUpload();
-                }
-              }}
-              title="Adicionar novo Flagra aos Stories"
-            >
-              <Plus size={12} color="#07080c" strokeWidth={3} />
-            </div>
+            {/* Post Story Plus Badge (ONLY FOR ADMIN) */}
+            {isAdmin && (
+              <div
+                className="story-add-badge"
+                onClick={(e) => {
+                  if (onOpenUpload) {
+                    e.stopPropagation();
+                    onOpenUpload();
+                  }
+                }}
+                title="Adicionar nova Galeria aos Stories (Admin Oficial)"
+              >
+                <Plus size={12} color="#07080c" strokeWidth={3} />
+              </div>
+            )}
 
             {isFounder && (
               <div className="story-crown-badge">

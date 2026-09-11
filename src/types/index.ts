@@ -2,6 +2,8 @@ export interface UserProfile {
   id: string;
   name: string;
   handle: string;
+  role?: 'admin' | 'user' | 'client' | 'photographer';
+  isAdmin?: boolean;
   cpf?: string;
   whatsapp?: string;
   phone?: string;
@@ -50,6 +52,11 @@ export interface UserProfile {
     notifyOnNewPhoto: boolean;
   };
   securitySettings?: UserSecuritySettings;
+}
+
+export function isUserAdmin(user?: UserProfile | null): boolean {
+  if (!user) return false;
+  return user.id === 'user_founder' || user.role === 'admin' || user.isAdmin === true;
 }
 
 export interface UserSecuritySettings {

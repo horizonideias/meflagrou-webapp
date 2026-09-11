@@ -6,6 +6,8 @@ const BASE_USERS: UserProfile[] = [
     id: 'user_founder',
     name: 'Meflagrou Oficial',
     handle: 'meflagrou',
+    role: 'admin',
+    isAdmin: true,
     avatar: '/founder_avatar.jpg',
     cpf: '111.444.777-35',
     whatsapp: '(11) 99999-8888',

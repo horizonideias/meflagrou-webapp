@@ -15,7 +15,7 @@ import {
   LogOut,
   Radio
 } from 'lucide-react';
-import type { UserProfile } from '../types';
+import { type UserProfile, isUserAdmin } from '../types';
 import { useCart } from '../context/CartContext';
 
 import { MeflagrouLogo } from './MeflagrouLogo';
@@ -61,6 +61,7 @@ export const InstagramSidebar: React.FC<InstagramSidebarProps> = ({
 }) => {
   const { cart, openCart } = useCart();
   const isFounder = currentUser.id === 'user_founder';
+  const isAdmin = isUserAdmin(currentUser);
 
   return (
     <aside className="instagram-left-sidebar">
@@ -206,15 +207,17 @@ export const InstagramSidebar: React.FC<InstagramSidebarProps> = ({
           <span className="nav-label">Alertas WhatsApp</span>
         </button>
 
-        {/* 9. Criar / Postar Foto */}
-        <button
-          onClick={onOpenUpload}
-          className="instagram-nav-item"
-          title="Criar / Publicar Novo Flagra"
-        >
-          <PlusSquare size={22} className="nav-icon" />
-          <span className="nav-label">Criar Flagra</span>
-        </button>
+        {/* 9. Publicar Galeria Oficial (Apenas Administrador) */}
+        {isAdmin && (
+          <button
+            onClick={onOpenUpload}
+            className="instagram-nav-item"
+            title="Publicar Galeria Oficial (Administrador)"
+          >
+            <PlusSquare size={22} className="nav-icon text-teal" />
+            <span className="nav-label font-bold">Publicar Galeria</span>
+          </button>
+        )}
 
         {/* 10. Carrinho & Vendas */}
         <button

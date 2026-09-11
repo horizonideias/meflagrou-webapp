@@ -3,9 +3,10 @@ import {
   Home, 
   MapPin, 
   PlusSquare, 
-  Swords
+  Swords,
+  Scan
 } from 'lucide-react';
-import type { UserProfile } from '../types';
+import { type UserProfile, isUserAdmin } from '../types';
 
 interface BottomMobileNavProps {
   currentUser: UserProfile;
@@ -15,6 +16,7 @@ interface BottomMobileNavProps {
   onOpenUpload: () => void;
   onOpenBattle: () => void;
   onOpenHallOfFame?: () => void;
+  onOpenFaceScanner?: () => void;
 }
 
 export const BottomMobileNav: React.FC<BottomMobileNavProps> = ({
@@ -24,7 +26,10 @@ export const BottomMobileNav: React.FC<BottomMobileNavProps> = ({
   onOpenRadar,
   onOpenUpload,
   onOpenBattle,
+  onOpenFaceScanner,
 }) => {
+  const isAdmin = isUserAdmin(currentUser);
+
   return (
     <nav className="mobile-bottom-nav">
       {/* 1. Feed / Home */}
@@ -50,14 +55,28 @@ export const BottomMobileNav: React.FC<BottomMobileNavProps> = ({
         <span>Radar</span>
       </button>
 
-      {/* 3. Central Postar / Criar Flagra */}
-      <button
-        onClick={onOpenUpload}
-        className="mobile-nav-create-btn"
-        title="Postar Novo Flagra"
-      >
-        <PlusSquare size={22} color="#07080c" />
-      </button>
+      {/* 3. Central Action: Admin -> Publicar Galeria | Cliente -> IA Face ID */}
+      {isAdmin ? (
+        <button
+          onClick={onOpenUpload}
+          className="mobile-nav-create-btn"
+          title="Publicar Galeria Oficial (Admin)"
+        >
+          <PlusSquare size={22} color="#07080c" />
+        </button>
+      ) : (
+        <button
+          onClick={onOpenFaceScanner || onOpenRadar}
+          className="mobile-nav-create-btn"
+          title="Buscar Meu Rosto com IA Face ID"
+          style={{
+            background: 'linear-gradient(135deg, var(--accent-teal) 0%, var(--accent-cyan) 100%)',
+            boxShadow: '0 0 16px rgba(0, 245, 212, 0.45)'
+          }}
+        >
+          <Scan size={22} color="#07080c" strokeWidth={2.5} />
+        </button>
+      )}
 
       {/* 4. Batalhas / Ranking */}
       <button

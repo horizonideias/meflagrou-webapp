@@ -15,11 +15,13 @@ import {
   ArrowRight, 
   Plus, 
   MessageSquare,
-  Cpu
+  Cpu,
+  Lock,
+  ShieldCheck
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { MOCK_EVENTS } from '../data/mockDatabase';
-import type { EventPhoto, UserProfile } from '../types';
+import { type EventPhoto, type UserProfile, isUserAdmin } from '../types';
 import { soundFx } from '../services/biometricService';
 import { useCart } from '../context/CartContext';
 
@@ -97,6 +99,58 @@ export const PhotoUploadDashboard: React.FC<PhotoUploadDashboardProps> = ({
   ]);
 
   if (!isOpen) return null;
+
+  // 🛡️ SECURITY GATEKEEPER: ONLY ADMIN CAN ACCESS AND UPLOAD GALLERIES
+  if (!isUserAdmin(currentUser)) {
+    return (
+      <div className="instagram-modal-overlay" onClick={onClose} style={{ zIndex: 99999 }}>
+        <div 
+          className="instagram-modal-container"
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            maxWidth: 480,
+            width: '92%',
+            padding: '36px 26px',
+            background: 'linear-gradient(135deg, rgba(20, 24, 38, 0.98), rgba(10, 12, 18, 0.99))',
+            border: '1px solid rgba(255, 0, 122, 0.4)',
+            borderRadius: 24,
+            textAlign: 'center',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.85), 0 0 30px rgba(255, 0, 122, 0.25)',
+            margin: 'auto'
+          }}
+        >
+          <div style={{ width: 68, height: 68, borderRadius: '50%', background: 'rgba(255, 0, 122, 0.15)', border: '1px solid #ff007a', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px auto', boxShadow: '0 0 20px rgba(255, 0, 122, 0.3)' }}>
+            <Lock size={32} color="#ff007a" />
+          </div>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fff', marginBottom: 8, letterSpacing: '-0.02em' }}>
+            Acesso Restrito ao Administrador
+          </h3>
+          <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.5, marginBottom: 20 }}>
+            Somente o Administrador Oficial do <strong>meflagrou.com</strong> possui autorização para cadastrar e publicar novas galerias de fotos de eventos.
+          </p>
+          <div style={{ background: 'rgba(0, 245, 212, 0.08)', border: '1px solid rgba(0, 245, 212, 0.25)', borderRadius: 14, padding: '14px 16px', marginBottom: 24, textAlign: 'left' }}>
+            <span style={{ fontSize: '0.82rem', color: 'var(--accent-teal)', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+              <ShieldCheck size={14} color="var(--accent-teal)" />
+              Sua conta de cliente tem acesso exclusivo a:
+            </span>
+            <ul style={{ margin: 0, paddingLeft: 18, fontSize: '0.78rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.6 }}>
+              <li>Busca de fotos por Inteligência Artificial (IA Face ID)</li>
+              <li>Visualização 3D Imersiva em Tela Cheia</li>
+              <li>Compras instantâneas via PIX com split 90/9/1%</li>
+              <li>Downloads em Ultra HD 8K de todos os seus flagras</li>
+            </ul>
+          </div>
+          <button
+            onClick={onClose}
+            className="btn-primary"
+            style={{ width: '100%', padding: '12px', fontSize: '0.92rem', fontWeight: 800 }}
+          >
+            Entendido, Voltar ao Feed
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const currentEvent = MOCK_EVENTS.find((e) => e.id === selectedEventId) || MOCK_EVENTS[0];
 
@@ -285,14 +339,14 @@ export const PhotoUploadDashboard: React.FC<PhotoUploadDashboardProps> = ({
             </div>
             <div>
               <div className="studio-title-row">
-                <h2 className="studio-main-title">Painel de Envio de Fotos (Upload Studio)</h2>
+                <h2 className="studio-main-title">Publicar Galeria Oficial (Painel Administrador)</h2>
                 <span className="studio-badge-pro">
                   <Sparkles size={11} />
-                  IA Face ID 8K
+                  Admin Oficial 8K
                 </span>
               </div>
               <p className="studio-subtitle">
-                Envio em lote para fotógrafos e organizadores com reconhecimento facial automático e monetização PIX.
+                Portal exclusivo do Administrador Oficial para upload em lote de galerias de eventos, indexação biométrica IA Face ID e monetização.
               </p>
             </div>
           </div>
